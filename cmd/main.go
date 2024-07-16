@@ -40,7 +40,8 @@ func main() {
 	validate := pkg.NewValidate()
 	userRepo := repositories.NewUserRepository()
 	oauthRepo := repositories.NewOauthRepository()
-	userService := services.NewUserService(DB, validate, userRepo, oauthRepo)
+	otpRepo := repositories.NewOtpRepository()
+	userService := services.NewUserService(DB, validate, userRepo, oauthRepo, otpRepo)
 
 	app := fiber.New()
 	fmt.Println("applying cors")

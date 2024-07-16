@@ -2,15 +2,12 @@ package services
 
 import (
 	"errors"
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
-	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
-	"github.com/Wrendra57/Pos-app-be/internal/utils/template_response"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -18,29 +15,31 @@ import (
 )
 
 type UserService interface {
-	CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (webrespones.UserDetail, exception.CustomEror,
+	CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (string, exception.CustomEror,
 		error)
 }
 
 type userServiceImpl struct {
 	UserRepository  repositories.UserRepository
 	OauthRepository repositories.OauthRepository
+	OtpRepository   repositories.OtpRepository
 	DB              *pgxpool.Pool
 	Validate        *validator.Validate
 }
 
 func NewUserService(db *pgxpool.Pool,
 	validate *validator.Validate, userRepo repositories.UserRepository,
-	oauthRepo repositories.OauthRepository) UserService {
+	oauthRepo repositories.OauthRepository, otpRepo repositories.OtpRepository) UserService {
 	return &userServiceImpl{
 		UserRepository:  userRepo,
 		OauthRepository: oauthRepo,
+		OtpRepository:   otpRepo,
 		DB:              db,
 		Validate:        validate,
 	}
 }
 
-func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (webrespones.UserDetail,
+func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (string,
 	exception.CustomEror, error) {
 
 	// start database
@@ -50,19 +49,19 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 
 	_, err = s.OauthRepository.FindByEmail(ctx, tx, request.Email)
 	if err == nil {
-		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusBadRequest,
+		return "", exception.CustomEror{Code: fiber.StatusBadRequest,
 			Error: "email already exists"}, errors.New("Email already exist")
 	}
 
 	_, err = s.OauthRepository.FindByUserName(ctx, tx, request.Username)
 	if err == nil {
-		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusBadRequest,
+		return "", exception.CustomEror{Code: fiber.StatusBadRequest,
 			Error: "Username already exists"}, errors.New("Username already exist")
 	}
 
 	hashedPassword, err := utils.HashPassword(request.Password)
 	if err != nil {
-		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusInternalServerError,
+		return "", exception.CustomEror{Code: fiber.StatusInternalServerError,
 			Error: "Error hashing password "}, err
 	}
 
@@ -92,9 +91,20 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	oauth, err = s.OauthRepository.InsertOauth(ctx, tx, oauth)
 	utils.PanicIfError(err)
 
-	fmt.Println(user)
-	fmt.Println(oauth)
-	fmt.Println("oaut")
+	//Creting OTP
+	otp := domain.OTP{Otp: utils.GenerateOTP(), User_id: user.User_id, Expired_date: time.Now().Add(time.Minute * 3),
+		Created_at: time.Now(), Updated_at: time.Now()}
 
-	return template_response.ToUserRespone(user, oauth), exception.CustomEror{}, nil
+	otp, err = s.OtpRepository.Insert(ctx, tx, otp)
+	utils.PanicIfError(err)
+
+	//strOTP := "ini kode token kamu " + otp.Otp
+	//err = utils.SendEmail("wrendra57@gmail.com", "OTP-ACCOUNT", strOTP)
+	//utils.PanicIfError(err)
+
+	//GenerateJWT for access validasi otp
+	JWTStr, err := utils.GenerateJWT(user.User_id)
+	utils.PanicIfError(err)
+
+	return JWTStr, exception.CustomEror{}, nil
 }

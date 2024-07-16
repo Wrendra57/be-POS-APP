@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
@@ -40,12 +39,10 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 		}
 		createUser, error, err := service.CreateUser(ctx, request)
 
-		fmt.Println(err)
-
 		if err != nil {
-			fmt.Println("err")
 			return exception.CustomResponse(ctx, error.Code, error.Error, nil)
 		}
+
 		responseApi := webrespones.ResponseApi{
 			Code:    fiber.StatusOK,
 			Status:  "ok",
