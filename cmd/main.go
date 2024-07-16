@@ -42,7 +42,7 @@ func main() {
 	oauthRepo := repositories.NewOauthRepository()
 	otpRepo := repositories.NewOtpRepository()
 	userService := services.NewUserService(DB, validate, userRepo, oauthRepo, otpRepo)
-
+	otpService := services.NewOTPService(oauthRepo, userRepo, DB, validate, otpRepo)
 	app := fiber.New()
 	fmt.Println("applying cors")
 	app.Use(cors.New())
@@ -54,7 +54,7 @@ func main() {
 	})
 	api := app.Group("/api")
 	routes.UserRoutes(api, userService, validate)
-
+	routes.OtpRoutes(api, otpService, validate)
 	fmt.Println("Server Ready")
 
 	log.Fatal(app.Listen(":8080"))

@@ -43,7 +43,7 @@ func (OtpRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, o domain.OTP) (domain
 
 func (OtpRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error) {
 	//TODO implement me
-	SQL := "SELECT id, user_id, otp, expired_date, created_at, updated_at FROM otp WHERE user_id = $1"
+	SQL := "SELECT id, user_id, otp, expired_date, created_at, updated_at FROM otp WHERE user_id = $1 order by otp.created_at desc LIMIT 1"
 
 	rows, err := tx.Query(ctx.Context(), SQL, uuid)
 	utils.PanicIfError(err)

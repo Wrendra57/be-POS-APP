@@ -42,7 +42,7 @@ func NewUserService(db *pgxpool.Pool,
 func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (string,
 	exception.CustomEror, error) {
 
-	// start database
+	// start database tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx, tx)

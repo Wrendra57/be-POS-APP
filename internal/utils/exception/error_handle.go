@@ -12,14 +12,22 @@ type JSONResponse struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func SuccessResponse(c *fiber.Ctx, message string, data interface{}) error {
+func FormatValidationError(err error) []*ValidationErrorResponse {
+	var errors []*ValidationErrorResponse
+	if _, ok := err.(*validator.InvalidValidationError); ok {
+		return errors
+	}
 
-	return c.Status(fiber.StatusOK).JSON(JSONResponse{
-		Status:  "success",
-		Message: message,
-		Data:    data,
-	})
+	for _, err := range err.(validator.ValidationErrors) {
+		var element ValidationErrorResponse
+		element.FailedField = err.Field()
+		element.Tag = err.Tag()
+		element.Value = err.Param()
+		errors = append(errors, &element)
+	}
+	return errors
 }
+
 func customErrorMessage(err *ValidationErrorResponse) string {
 	switch err.Tag {
 	case "required":
@@ -48,6 +56,14 @@ func ValidateErrorResponse(c *fiber.Ctx, message string, data []*ValidationError
 	})
 
 }
+func SuccessResponse(c *fiber.Ctx, message string, data interface{}) error {
+
+	return c.Status(fiber.StatusOK).JSON(JSONResponse{
+		Status:  "success",
+		Message: message,
+		Data:    data,
+	})
+}
 
 func NotFoundResponse(c *fiber.Ctx, message string) error {
 	return c.Status(fiber.StatusNotFound).JSON(JSONResponse{
@@ -57,27 +73,18 @@ func NotFoundResponse(c *fiber.Ctx, message string) error {
 	})
 }
 
-func FormatValidationError(err error) []*ValidationErrorResponse {
-	var errors []*ValidationErrorResponse
-	if _, ok := err.(*validator.InvalidValidationError); ok {
-		return errors
-	}
-
-	for _, err := range err.(validator.ValidationErrors) {
-		var element ValidationErrorResponse
-		element.FailedField = err.Field()
-		element.Tag = err.Tag()
-		element.Value = err.Param()
-		errors = append(errors, &element)
-	}
-	return errors
-}
-
 func CustomResponse(c *fiber.Ctx, code int, message string, data interface{}) error {
-	fmt.Println("ew")
 	return c.Status(code).JSON(JSONResponse{
 		Status:  "failed",
 		Message: message,
 		Data:    data,
+	})
+}
+func UnauthorizedRespone(c *fiber.Ctx, message string) error {
+	fmt.Println("ew")
+	return c.Status(fiber.StatusUnauthorized).JSON(JSONResponse{
+		Status:  "failed",
+		Message: message,
+		Data:    nil,
 	})
 }
