@@ -29,6 +29,8 @@ func (r *oauthRepositoryImpl) InsertOauth(ctx *fiber.Ctx, tx pgx.Tx, oauth domai
 
 	// Periksa apakah terjadi kesalahan
 	if err != nil {
+		fmt.Println("insertoauth ==>  " + err.Error())
+
 		return oauth, err // Mengembalikan kesalahan yang terjadi
 	}
 
@@ -37,7 +39,7 @@ func (r *oauthRepositoryImpl) InsertOauth(ctx *fiber.Ctx, tx pgx.Tx, oauth domai
 
 func (r *oauthRepositoryImpl) FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email string) (domain.Oauth,
 	error) {
-	fmt.Println("repo find by email")
+
 	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE email = $1"
 	row := tx.QueryRow(ctx.Context(), SQL, email)
 
@@ -45,8 +47,9 @@ func (r *oauthRepositoryImpl) FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email strin
 
 	err := row.Scan(&oauth.Id, &oauth.Email, &oauth.Password, &oauth.Is_enabled, &oauth.Username, &oauth.User_id,
 		&oauth.Created_at, &oauth.Updated_at)
-	fmt.Println(err)
+
 	if err != nil {
+		fmt.Println("repo find by username ==>  " + err.Error())
 		return oauth, errors.New("user not found")
 	}
 
@@ -54,7 +57,7 @@ func (r *oauthRepositoryImpl) FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email strin
 }
 func (r *oauthRepositoryImpl) FindByUserName(ctx *fiber.Ctx, tx pgx.Tx, username string) (domain.Oauth,
 	error) {
-	fmt.Println("repo find by username")
+
 	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE username = $1"
 	row := tx.QueryRow(ctx.Context(), SQL, username)
 
@@ -64,6 +67,7 @@ func (r *oauthRepositoryImpl) FindByUserName(ctx *fiber.Ctx, tx pgx.Tx, username
 		&oauth.Created_at, &oauth.Updated_at)
 	//fmt.Println(oauth)
 	if err != nil {
+		fmt.Println("repo find by username ==>  " + err.Error())
 		return oauth, errors.New("user not found")
 
 		//if err != nil {

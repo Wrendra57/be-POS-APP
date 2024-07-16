@@ -8,12 +8,10 @@ import (
 func CommitOrRollback(ctx *fiber.Ctx, tx pgx.Tx) {
 	err := recover()
 	if err != nil {
-		_ = tx.Rollback(ctx.Context())
-		//PanicIfError(ctx, fiber.StatusInternalServerError, errorRollback)
-		//panic(errorRollback)
+		errRoleback := tx.Rollback(ctx.Context())
+		PanicIfError(errRoleback)
 	} else {
-		_ = tx.Commit(ctx.Context())
-		//PanicIfError(ctx, fiber.StatusInternalServerError, errorCommit)
-		//panic(errorCommit)
+		errCommit := tx.Commit(ctx.Context())
+		PanicIfError(errCommit)
 	}
 }

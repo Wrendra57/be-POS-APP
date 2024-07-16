@@ -42,34 +42,26 @@ func NewUserService(db *pgxpool.Pool,
 
 func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (webrespones.UserDetail,
 	exception.CustomEror, error) {
-	//fmt.Println(request)
 
 	// start database
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
-	utils.PanicIfError(ctx, fiber.StatusBadRequest, err)
+	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx, tx)
 
 	_, err = s.OauthRepository.FindByEmail(ctx, tx, request.Email)
-	//fmt.Println(err)
 	if err == nil {
-		fmt.Println("err FindByEmail")
 		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusBadRequest,
 			Error: "email already exists"}, errors.New("Email already exist")
 	}
 
 	_, err = s.OauthRepository.FindByUserName(ctx, tx, request.Username)
-
 	if err == nil {
-		fmt.Println("err2")
-		fmt.Println("err23")
-		fmt.Println(err)
-
 		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusBadRequest,
 			Error: "Username already exists"}, errors.New("Username already exist")
 	}
+
 	hashedPassword, err := utils.HashPassword(request.Password)
 	if err != nil {
-		//utils.PanicIfError(ctx, fiber.StatusBadRequest, errors.New("Error hashing password"))
 		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusInternalServerError,
 			Error: "Error hashing password "}, err
 	}
@@ -91,23 +83,15 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 		Created_at: time.Now(),
 		Updated_at: time.Now(),
 	}
-	//fmt.Println(user)
-	//fmt.Println(oauth)
+
 	user, err = s.UserRepository.InsertUser(ctx, tx, user)
-	if err != nil {
-		//utils.PanicIfError(ctx, fiber.StatusBadRequest, err)
-		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusInternalServerError,
-			Error: "Internal server error"}, err
-	}
-	//utils.PanicIfError(err)
+	utils.PanicIfError(err)
+
 	oauth.User_id = user.User_id
 
 	oauth, err = s.OauthRepository.InsertOauth(ctx, tx, oauth)
-	if err != nil {
-		//utils.PanicIfError(ctx, fiber.StatusBadRequest, err)
-		return webrespones.UserDetail{}, exception.CustomEror{Code: fiber.StatusInternalServerError,
-			Error: "Internal server error"}, err
-	}
+	utils.PanicIfError(err)
+
 	fmt.Println(user)
 	fmt.Println(oauth)
 	fmt.Println("oaut")

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/config"
+	"github.com/Wrendra57/Pos-app-be/internal/middleware"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/routes"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
@@ -45,6 +46,7 @@ func main() {
 	fmt.Println("applying cors")
 	app.Use(cors.New())
 	app.Use(recover2.New())
+	app.Use(middleware.RecoverMiddleware())
 
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Send([]byte("Welcome to Pos App Be"))

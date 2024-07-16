@@ -15,7 +15,7 @@ func NewDB(ctx *fiber.Ctx) *pgxpool.Pool {
 	// Construct DSN
 	dsn := "postgres://" + config.GetString("DB_USER") + ":" + config.GetString("DB_PASSWORD") + ":" + config.GetString("DB_HOST") + ":" + config.GetString("DB_PORT") + "/" + config.GetString("DB_NAME") + "?sslmode=" + config.GetString("DB_SSL_MODE")
 	db, err := pgxpool.New(context.Background(), dsn)
-	utils.PanicIfError(ctx, fiber.StatusInternalServerError, err)
+	utils.PanicIfError(err)
 
 	defer db.Close()
 	return db

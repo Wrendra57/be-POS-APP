@@ -32,6 +32,7 @@ func (r *userRepositoryImpl) InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.U
 
 	// Periksa apakah terjadi kesalahan
 	if err != nil {
+		fmt.Println("repo insert user ==>  " + err.Error())
 		return user, err // Mengembalikan kesalahan yang terjadi
 	}
 
@@ -45,14 +46,14 @@ func (r *userRepositoryImpl) FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID)
 	SQL := "select user_id, name, gender, telp, birthdate,address,created_at,updated_at from users where user_id= ?"
 
 	rows, err := tx.Query(ctx.Context(), SQL, uuid)
-	utils.PanicIfError(ctx, fiber.StatusInternalServerError, err)
+	utils.PanicIfError(err)
 	defer rows.Close()
 
 	user := domain.User{}
 	if rows.Next() {
 		err := rows.Scan(&user.User_id, &user.Name, &user.Gender, &user.Telp, &user.Birthday, &user.Address,
 			&user.Created_at, &user.Updated_at)
-		utils.PanicIfError(ctx, fiber.StatusInternalServerError, err)
+		utils.PanicIfError(err)
 		return user, nil
 	} else {
 		return user, errors.New("user not found")

@@ -17,7 +17,7 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 	return func(ctx *fiber.Ctx) error {
 		request := webrequest.UserCreateRequest{}
 		err := ctx.BodyParser(&request)
-		utils.PanicIfError(ctx, fiber.StatusBadRequest, err)
+		utils.PanicIfError(err)
 
 		// parsing date
 		layout := "2006-01-02"
@@ -39,7 +39,7 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
 		createUser, error, err := service.CreateUser(ctx, request)
-		fmt.Println("ass")
+
 		fmt.Println(err)
 
 		if err != nil {
