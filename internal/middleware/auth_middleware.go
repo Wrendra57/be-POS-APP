@@ -27,7 +27,7 @@ func Authenticate() fiber.Handler {
 		result, err := utils.ParseJWT(tokenString)
 
 		if err != nil {
-			return exception.UnauthorizedRespone(c, err.Error())
+			return exception.UnauthorizedRespone(c, "Unauthorized")
 		}
 		c.Locals("user_id", result.User_id)
 		c.Locals("token", tokenString)

@@ -14,6 +14,7 @@ import (
 type OtpRepository interface {
 	Insert(ctx *fiber.Ctx, tx pgx.Tx, otp domain.OTP) (domain.OTP, error)
 	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error)
+	FindAllByUserIdAroundTime(ctx *fiber.Ctx, tx pgx.Tx, timeStart, timeEnd time.Time, user_id uuid.UUID) ([]domain.OTP, error)
 }
 
 type OtpRepositoryImpl struct {
@@ -58,4 +59,24 @@ func (OtpRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (
 	} else {
 		return otp, errors.New("user not found")
 	}
+}
+
+func (OtpRepositoryImpl) FindAllByUserIdAroundTime(ctx *fiber.Ctx, tx pgx.Tx, timeStart, timeEnd time.Time, user_id uuid.UUID) ([]domain.OTP, error) {
+	//TODO implement me
+	SQL := "SELECT id, user_id, otp, expired_date, created_at, " +
+		"updated_at FROM otp WHERE created_at >= $1 AND created_at <= $2 AND user_id = $3 order by created_at ASC"
+
+	rows, err := tx.Query(ctx.Context(), SQL, timeStart, timeEnd, user_id)
+	utils.PanicIfError(err)
+	defer rows.Close()
+
+	var otps []domain.OTP
+	for rows.Next() {
+		otp := domain.OTP{}
+		err := rows.Scan(&otp.Id, &otp.User_id, &otp.Otp, &otp.Expired_date, &otp.Created_at, &otp.Updated_at)
+		utils.PanicIfError(err)
+		otps = append(otps, otp)
+	}
+	return otps, nil
+
 }
