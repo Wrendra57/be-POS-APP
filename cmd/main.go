@@ -41,8 +41,12 @@ func main() {
 	userRepo := repositories.NewUserRepository()
 	oauthRepo := repositories.NewOauthRepository()
 	otpRepo := repositories.NewOtpRepository()
+	photoRepo := repositories.NewPhotosRepository()
+
 	userService := services.NewUserService(DB, validate, userRepo, oauthRepo, otpRepo)
 	otpService := services.NewOTPService(oauthRepo, userRepo, DB, validate, otpRepo)
+	photoService := services.NewPhotosService(photoRepo, DB, validate)
+
 	app := fiber.New()
 	fmt.Println("applying cors")
 	app.Use(cors.New())
@@ -55,7 +59,8 @@ func main() {
 	api := app.Group("/api")
 	routes.UserRoutes(api, userService, validate)
 	routes.OtpRoutes(api, otpService, validate)
+	routes.FileRoutes(api, photoService, validate)
 	fmt.Println("Server Ready")
-
+	app.Static("/foto", "./storage/photos")
 	log.Fatal(app.Listen(":8080"))
 }

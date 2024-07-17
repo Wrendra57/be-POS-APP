@@ -36,7 +36,7 @@ func (OtpRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, o domain.OTP) (domain
 		fmt.Println("repo insert user ==>  " + err.Error())
 		return o, err // Mengembalikan kesalahan yang terjadi
 	}
-	// Set user_id yang telah didapat dari hasil query ke objek user
+
 	o.Id = id
 	fmt.Println(o)
 	return o, nil
