@@ -38,11 +38,11 @@ func NewPhotosService(PhotoRepo repositories.PhotosRepository,
 }
 func (s photosServiceImpl) UploadPhotos(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) (domain.Photos,
 	exception.CustomEror, bool) {
-	parts := strings.Split(request.Name, " ")
-	request.Name = strings.Join(parts, "-")
+	request.Name = strings.Join(strings.Split(request.Name, " "), "-")
+	request.Foto.Filename = strings.Join(strings.Split(request.Foto.Filename, " "), "-")
 
-	filename := request.Name + "-" + request.Foto.Filename + "-" + request.Owner_id.String() + "-" + time.Now().Format(
-		"20060102_150405")
+	filename := request.Name + "-" + time.Now().Format(
+		"20060102_150405") + "-" + request.Foto.Filename
 
 	f := domain.Photos{
 		Url:       "http://127.0.0.1:8080/foto/" + filename,
