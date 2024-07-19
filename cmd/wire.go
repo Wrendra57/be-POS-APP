@@ -44,7 +44,7 @@ func NewApp(
 	app.Use(cors.New())
 	app.Use(recover2.New())
 	app.Use(middleware.RecoverMiddleware())
-
+	app.Static("/foto", "./storage/photos")
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Send([]byte("Welcome to Pos App Be"))
 	})

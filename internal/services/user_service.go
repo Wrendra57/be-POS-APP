@@ -12,6 +12,7 @@ import (
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
 )
@@ -20,7 +21,7 @@ type UserService interface {
 	CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (string, exception.CustomEror,
 		error)
 	Login(ctx *fiber.Ctx, request webrequest.UserLoginRequest) (webrespones.TokenResp, exception.CustomEror, bool)
-	//AuthMe(ctx *fiber.Ctx) (domain.User, exception.CustomEror, bool)
+	AuthMe(ctx *fiber.Ctx) (domain.UserDetail, exception.CustomEror, bool)
 }
 
 type userServiceImpl struct {
@@ -161,13 +162,18 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 
 }
 
-//func (s userServiceImpl) AuthMe(ctx *fiber.Ctx) (domain.User, exception.CustomEror, bool) {
-//	//TODO implement me
-//	userId, _ := ctx.Locals("user_id").(uuid.UUID)
-//
-//	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
-//	utils.PanicIfError(err)
-//	defer utils.CommitOrRollback(ctx, tx)
-//
-//	panic("implement me")
-//}
+func (s userServiceImpl) AuthMe(ctx *fiber.Ctx) (domain.UserDetail, exception.CustomEror, bool) {
+	//TODO implement me
+	userId, _ := ctx.Locals("user_id").(uuid.UUID)
+	user := domain.UserDetail{}
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx, tx)
+
+	user, err = s.UserRepository.FindUserDetail(ctx, tx, userId)
+	if err != nil {
+		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "user not found"}, false
+	}
+
+	return user, exception.CustomEror{}, true
+}

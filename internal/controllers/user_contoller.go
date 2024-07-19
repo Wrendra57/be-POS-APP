@@ -73,3 +73,14 @@ func LoginUser(service services.UserService, validate *validator.Validate) fiber
 
 	}
 }
+
+func AuthMe(service services.UserService) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		resp, er, ok := service.AuthMe(ctx)
+		if !ok {
+			return exception.CustomResponse(ctx, er.Code, er.Error, nil)
+		}
+		return exception.SuccessResponse(ctx, "Success Get Data", resp)
+
+	}
+}

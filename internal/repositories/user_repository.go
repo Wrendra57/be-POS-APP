@@ -13,7 +13,7 @@ import (
 type UserRepository interface {
 	InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.User) (domain.User, error)
 	FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error)
-	FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error)
+	FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.UserDetail, error)
 }
 
 type userRepositoryImpl struct {
@@ -61,8 +61,37 @@ func (r *userRepositoryImpl) FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID)
 	}
 }
 
-func (r *userRepositoryImpl) FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error) {
-	//TODO implement me
+func (r *userRepositoryImpl) FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.UserDetail, error) {
+	SQL := `SELECT u.user_id   AS user_id,
+				   o.email     AS email,
+				   o.username  AS username,
+				   u.name      AS name,
+				   u.gender    AS gender,
+				   u.telp      AS telp,
+				   u.birthdate AS birthdate,
+				   u.address   AS address,
+				   p.url       AS foto_profil,
+				   r.role      AS role,
+				   u.created_at
+			FROM users u
+					 JOIN oauths o on o.user_id = u.user_id
+					 JOIN photos p ON u.user_id = p.owner_id
+					 JOIN roles r on u.user_id = r.user_id
+			where u.user_id = $1
+			  AND o.is_enabled = true
+			  AND o.deleted_at is null`
 
-	panic("implement me")
+	rows, err := tx.Query(ctx.Context(), SQL, uuid)
+	utils.PanicIfError(err)
+	defer rows.Close()
+
+	user := domain.UserDetail{}
+	if rows.Next() {
+		err := rows.Scan(&user.User_id, &user.Email, &user.Username, &user.Name, &user.Gender, &user.Telp, &user.Birthday, &user.Address,
+			&user.Foto_profile, &user.Role, &user.Created_at)
+		utils.PanicIfError(err)
+		return user, nil
+	} else {
+		return user, errors.New("user not found")
+	}
 }
