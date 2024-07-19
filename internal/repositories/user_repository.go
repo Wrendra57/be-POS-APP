@@ -13,6 +13,7 @@ import (
 type UserRepository interface {
 	InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.User) (domain.User, error)
 	FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error)
+	FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error)
 }
 
 type userRepositoryImpl struct {
@@ -58,4 +59,10 @@ func (r *userRepositoryImpl) FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID)
 	} else {
 		return user, errors.New("user not found")
 	}
+}
+
+func (r *userRepositoryImpl) FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error) {
+	//TODO implement me
+
+	panic("implement me")
 }

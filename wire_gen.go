@@ -32,9 +32,9 @@ func InitializeApp() (*fiber.App, func(), error) {
 	oauthRepository := repositories.NewOauthRepository()
 	otpRepository := repositories.NewOtpRepository()
 	roleRepository := repositories.NewRoleRepository()
-	userService := services.NewUserService(pool, validate, userRepository, oauthRepository, otpRepository, roleRepository)
-	otpService := services.NewOTPService(oauthRepository, userRepository, pool, validate, otpRepository)
 	photosRepository := repositories.NewPhotosRepository()
+	userService := services.NewUserService(pool, validate, userRepository, oauthRepository, otpRepository, roleRepository, photosRepository)
+	otpService := services.NewOTPService(oauthRepository, userRepository, pool, validate, otpRepository)
 	photosService := services.NewPhotosService(photosRepository, pool, validate)
 	app, cleanup2, err := NewApp(pool, validate, userService, otpService, photosService)
 	if err != nil {

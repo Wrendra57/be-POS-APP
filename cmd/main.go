@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/Wrendra57/Pos-app-be"
+	be "github.com/Wrendra57/Pos-app-be"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/joho/godotenv"
 	"log"
@@ -16,6 +16,7 @@ func main() {
 		panic(err)
 	}
 	app, cleanup, err := be.InitializeApp()
+
 	if err != nil {
 		log.Fatalf("failed to initialize app: %v", err)
 	}

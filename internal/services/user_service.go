@@ -20,6 +20,7 @@ type UserService interface {
 	CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (string, exception.CustomEror,
 		error)
 	Login(ctx *fiber.Ctx, request webrequest.UserLoginRequest) (webrespones.TokenResp, exception.CustomEror, bool)
+	//AuthMe(ctx *fiber.Ctx) (domain.User, exception.CustomEror, bool)
 }
 
 type userServiceImpl struct {
@@ -27,17 +28,20 @@ type userServiceImpl struct {
 	OauthRepository repositories.OauthRepository
 	OtpRepository   repositories.OtpRepository
 	RoleRepository  repositories.RoleRepository
+	PhotoRepository repositories.PhotosRepository
 	DB              *pgxpool.Pool
 	Validate        *validator.Validate
 }
 
 func NewUserService(db *pgxpool.Pool,
 	validate *validator.Validate, userRepo repositories.UserRepository,
-	oauthRepo repositories.OauthRepository, otpRepo repositories.OtpRepository, roleRepo repositories.RoleRepository) UserService {
+	oauthRepo repositories.OauthRepository, otpRepo repositories.OtpRepository, roleRepo repositories.RoleRepository,
+	photoRepo repositories.PhotosRepository) UserService {
 	return &userServiceImpl{
 		UserRepository:  userRepo,
 		OauthRepository: oauthRepo,
 		OtpRepository:   otpRepo,
+		PhotoRepository: photoRepo,
 		RoleRepository:  roleRepo,
 		DB:              db,
 		Validate:        validate,
@@ -47,6 +51,7 @@ func NewUserService(db *pgxpool.Pool,
 func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (string,
 	exception.CustomEror, error) {
 
+	photoTemplate := "http://127.0.0.1:8080/foto/default-photo-picture.png"
 	// start database tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
@@ -108,6 +113,10 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	otp, err = s.OtpRepository.Insert(ctx, tx, otp)
 	utils.PanicIfError(err)
 
+	//insert photo default
+	_, err = s.PhotoRepository.Insert(ctx, tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
+	utils.PanicIfError(err)
+
 	//strOTP := "ini kode token kamu " + otp.Otp
 	//err = utils.SendEmail("wrendra57@gmail.com", "OTP-ACCOUNT", strOTP)
 	//utils.PanicIfError(err)
@@ -151,3 +160,14 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 	return webrespones.TokenResp{Token: tokenJwt}, exception.CustomEror{}, true
 
 }
+
+//func (s userServiceImpl) AuthMe(ctx *fiber.Ctx) (domain.User, exception.CustomEror, bool) {
+//	//TODO implement me
+//	userId, _ := ctx.Locals("user_id").(uuid.UUID)
+//
+//	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+//	utils.PanicIfError(err)
+//	defer utils.CommitOrRollback(ctx, tx)
+//
+//	panic("implement me")
+//}
