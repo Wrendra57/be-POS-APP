@@ -6,6 +6,7 @@ import (
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
+	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
@@ -18,6 +19,7 @@ import (
 type UserService interface {
 	CreateUser(ctx *fiber.Ctx, request webrequest.UserCreateRequest) (string, exception.CustomEror,
 		error)
+	Login(ctx *fiber.Ctx, request webrequest.UserLoginRequest) (webrespones.TokenResp, exception.CustomEror, bool)
 }
 
 type userServiceImpl struct {
@@ -93,24 +95,59 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 
 	oauth, err = s.OauthRepository.InsertOauth(ctx, tx, oauth)
 	utils.PanicIfError(err)
-	fmt.Println("5")
+
 	//create role
-	_, err = s.RoleRepository.Insert(ctx, tx, domain.Roles{Role: "member", User_id: user.User_id})
-	fmt.Println("6")
+	role, err := s.RoleRepository.Insert(ctx, tx, domain.Roles{Role: "member", User_id: user.User_id})
+	fmt.Println("err sdds==>", err)
+	utils.PanicIfError(err)
+
 	//Creting OTP
 	otp := domain.OTP{Otp: utils.GenerateOTP(), User_id: user.User_id, Expired_date: time.Now().Add(time.Minute * 3),
 		Created_at: time.Now(), Updated_at: time.Now()}
 
 	otp, err = s.OtpRepository.Insert(ctx, tx, otp)
 	utils.PanicIfError(err)
-	fmt.Println("7")
+
 	//strOTP := "ini kode token kamu " + otp.Otp
 	//err = utils.SendEmail("wrendra57@gmail.com", "OTP-ACCOUNT", strOTP)
 	//utils.PanicIfError(err)
 
 	//GenerateJWT for access validasi otp
-	JWTStr, err := utils.GenerateJWT(user.User_id)
+	JWTStr, err := utils.GenerateJWT(user.User_id, role.Role)
 	utils.PanicIfError(err)
 
 	return JWTStr, exception.CustomEror{}, nil
+}
+
+func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginRequest) (webrespones.TokenResp, exception.CustomEror,
+	bool) {
+	// start database tx
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx, tx)
+
+	o, err := s.OauthRepository.FindByUsernameOrEmail(ctx, tx, request.UserName)
+	if err != nil {
+		return webrespones.TokenResp{}, exception.CustomEror{Code: fiber.StatusBadRequest,
+			Error: "Account / Password was wrong"}, false
+	}
+	if !o.Is_enabled {
+		return webrespones.TokenResp{}, exception.CustomEror{Code: fiber.StatusBadRequest,
+			Error: "Account not enabled"}, false
+	}
+	comparePassword := utils.CheckPasswordHash(request.Password, o.Password)
+
+	if !comparePassword {
+		return webrespones.TokenResp{}, exception.CustomEror{Code: fiber.StatusBadRequest,
+			Error: "Account / Password was wrong"}, false
+	}
+
+	role, err := s.RoleRepository.FindByUserId(ctx, tx, o.User_id)
+	utils.PanicIfError(err)
+
+	tokenJwt, err := utils.GenerateJWT(o.User_id, role.Role)
+	utils.PanicIfError(err)
+
+	return webrespones.TokenResp{Token: tokenJwt}, exception.CustomEror{}, true
+
 }

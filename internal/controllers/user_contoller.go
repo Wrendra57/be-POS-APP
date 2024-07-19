@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
@@ -39,8 +38,7 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
 		createUser, error, err := service.CreateUser(ctx, request)
-		fmt.Println("9")
-		fmt.Println(createUser)
+
 		if err != nil {
 			return exception.CustomResponse(ctx, error.Code, error.Error, nil)
 		}
@@ -52,5 +50,26 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 			Data:    createUser,
 		}
 		return ctx.Status(fiber.StatusOK).JSON(responseApi)
+	}
+}
+
+func LoginUser(service services.UserService, validate *validator.Validate) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		request := webrequest.UserLoginRequest{}
+		err := ctx.BodyParser(&request)
+		utils.PanicIfError(err)
+
+		if err := pkg.ValidateStruct(&request, validate); err != nil {
+			errors := exception.FormatValidationError(err)
+			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
+		}
+
+		resp, er, ok := service.Login(ctx, request)
+
+		if !ok {
+			return exception.CustomResponse(ctx, er.Code, er.Error, nil)
+		}
+		return exception.SuccessResponse(ctx, "Success login", resp)
+
 	}
 }

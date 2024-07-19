@@ -25,9 +25,12 @@ func (p PhotosRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, photos domain.Ph
 
 	var id uuid.UUID
 
-	err := tx.QueryRow(ctx.Context(), SQL, photos.Url, photos.Owner).Scan(&id)
+	row := tx.QueryRow(ctx.Context(), SQL, photos.Url, photos.Owner)
+
+	err := row.Scan(&id)
+
 	if err != nil {
-		fmt.Println("repo insert user ==>  " + err.Error())
+		fmt.Println("repo insert foto ==>  " + err.Error())
 		return photos, err
 	}
 

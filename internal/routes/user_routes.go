@@ -9,7 +9,6 @@ import (
 
 func UserRoutes(app fiber.Router, service services.UserService, validate *validator.Validate) {
 	//api := app.Group("/v1/users")
-	app.Get("/v1/users", controllers.CreateUser(service, validate))
-	app.Post("/v1/users", controllers.CreateUser(service, validate))
-	//app.
+	app.Post("/v1/users/register", controllers.CreateUser(service, validate))
+	app.Post("/v1/users/login", controllers.LoginUser(service, validate))
 }

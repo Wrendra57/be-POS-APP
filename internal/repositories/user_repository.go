@@ -27,7 +27,9 @@ func (r *userRepositoryImpl) InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.U
 
 	var userID uuid.UUID
 
-	err := tx.QueryRow(ctx.Context(), SQL, user.Name, user.Gender, user.Telp, user.Birthday, user.Address).Scan(&userID)
+	row := tx.QueryRow(ctx.Context(), SQL, user.Name, user.Gender, user.Telp, user.Birthday, user.Address)
+
+	err := row.Scan(&userID)
 
 	if err != nil {
 		fmt.Println("repo insert user ==>  " + err.Error())

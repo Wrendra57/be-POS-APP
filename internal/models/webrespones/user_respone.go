@@ -18,3 +18,7 @@ type UserDetail struct {
 	Created_at time.Time `json:"created_at"`
 	Updated_at time.Time `json:"updated_at"`
 }
+
+type TokenResp struct {
+	Token string `json:"token"`
+}

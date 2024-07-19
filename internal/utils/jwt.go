@@ -10,12 +10,14 @@ import (
 
 type Claimed struct {
 	User_id uuid.UUID `json:"user_id"`
+	Level   string    `json:"level"`
 	jwt.RegisteredClaims
 }
 
-func GenerateJWT(uuid uuid.UUID) (string, error) {
+func GenerateJWT(uuid uuid.UUID, level string) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": uuid,
+		"level":   level,
 		"exp":     time.Now().Add(time.Hour * 24).Unix(),
 	}
 

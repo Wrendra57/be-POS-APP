@@ -24,18 +24,18 @@ func NewRoleRepository() RoleRepository {
 
 func (r roleRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, roles domain.Roles) (domain.Roles, error) {
 	//TODO implement me
-	SQL := "INSERT INTO roles(user_id, role) VALUES($1, $2)"
+	SQL := "INSERT INTO roles(user_id, role) VALUES($1, $2) returning id"
 
 	var id int
-	err := tx.QueryRow(ctx.Context(), SQL, roles.User_id, roles.Role).Scan(&id)
+	row := tx.QueryRow(ctx.Context(), SQL, roles.User_id, roles.Role)
 
-	roles.Id = id
-	
+	err := row.Scan(&id)
+
 	if err != nil {
-		fmt.Println("repo insert user ==>  " + err.Error())
+		fmt.Println("repo insert role ==>  " + err.Error())
 		return roles, err
 	}
-
+	roles.Id = id
 	return roles, nil
 }
 

@@ -30,10 +30,12 @@ func (OtpRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, o domain.OTP) (domain
 
 	var id int
 
-	err := tx.QueryRow(ctx.Context(), SQL, o.User_id, o.Otp, o.Expired_date, time.Now(), time.Now()).Scan(&id)
+	row := tx.QueryRow(ctx.Context(), SQL, o.User_id, o.Otp, o.Expired_date, time.Now(), time.Now())
+
+	err := row.Scan(&id)
 
 	if err != nil {
-		fmt.Println("repo insert user ==>  " + err.Error())
+		fmt.Println("repo insert otp ==>  " + err.Error())
 		return o, err // Mengembalikan kesalahan yang terjadi
 	}
 
@@ -57,7 +59,7 @@ func (OtpRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (
 		utils.PanicIfError(err)
 		return otp, nil
 	} else {
-		return otp, errors.New("user not found")
+		return otp, errors.New("otp not found")
 	}
 }
 
