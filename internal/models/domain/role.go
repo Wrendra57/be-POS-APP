@@ -6,13 +6,10 @@ import (
 	"time"
 )
 
-type User struct {
+type Roles struct {
+	Id         int
 	User_id    uuid.UUID
-	Name       string
-	Gender     string
-	Telp       string
-	Birthday   time.Time
-	Address    string
+	Role       string
 	Created_at time.Time
 	Updated_at time.Time
 	Deleted_at sql.NullTime

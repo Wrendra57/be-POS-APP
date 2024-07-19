@@ -44,7 +44,7 @@ func (r *oauthRepositoryImpl) InsertOauth(ctx *fiber.Ctx, tx pgx.Tx, oauth domai
 func (r *oauthRepositoryImpl) FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email string) (domain.Oauth,
 	error) {
 
-	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE email = $1"
+	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE email = $1 and deleted_at IS NULL"
 	row := tx.QueryRow(ctx.Context(), SQL, email)
 
 	oauth := domain.Oauth{}
@@ -62,7 +62,8 @@ func (r *oauthRepositoryImpl) FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email strin
 func (r *oauthRepositoryImpl) FindByUserName(ctx *fiber.Ctx, tx pgx.Tx, username string) (domain.Oauth,
 	error) {
 
-	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE username = $1"
+	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE username = $1 AND deleted_at IS NULL"
+
 	row := tx.QueryRow(ctx.Context(), SQL, username)
 
 	oauth := domain.Oauth{}
@@ -78,7 +79,8 @@ func (r *oauthRepositoryImpl) FindByUserName(ctx *fiber.Ctx, tx pgx.Tx, username
 	return oauth, nil
 }
 func (r *oauthRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, u uuid.UUID) (domain.Oauth, error) {
-	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE user_id = $1"
+	SQL := "SELECT id, email, password, is_enabled, username, user_id, created_at, updated_at FROM oauths WHERE user_id = $1 AND deleted_at is NULL"
+
 	row := tx.QueryRow(ctx.Context(), SQL, u)
 
 	oauth := domain.Oauth{}
@@ -136,7 +138,7 @@ func (r *oauthRepositoryImpl) Update(ctx *fiber.Ctx, tx pgx.Tx, o domain.Oauth, 
 
 	// Retrieve the updated row to return it
 	row := tx.QueryRow(ctx.Context(), "SELECT id, email, password, is_enabled, username, user_id, created_at, "+
-		"updated_at FROM oauths WHERE user_id = $1", u)
+		"updated_at FROM oauths WHERE user_id = $1 AND deleted_at is NULL", u)
 
 	var oauth domain.Oauth
 	err = row.Scan(&oauth.Id, &oauth.Email, &oauth.Password, &oauth.Is_enabled, &oauth.Username, &oauth.User_id, &oauth.Created_at, &oauth.Updated_at)

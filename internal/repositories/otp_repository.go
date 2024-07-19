@@ -44,7 +44,7 @@ func (OtpRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, o domain.OTP) (domain
 
 func (OtpRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error) {
 	//TODO implement me
-	SQL := "SELECT id, user_id, otp, expired_date, created_at, updated_at FROM otp WHERE user_id = $1 order by otp.created_at desc LIMIT 1"
+	SQL := "SELECT id, user_id, otp, expired_date, created_at, updated_at FROM otp WHERE user_id = $1 AND deleted_at is null order by otp.created_at desc LIMIT 1"
 
 	rows, err := tx.Query(ctx.Context(), SQL, uuid)
 	utils.PanicIfError(err)
@@ -64,7 +64,7 @@ func (OtpRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (
 func (OtpRepositoryImpl) FindAllByUserIdAroundTime(ctx *fiber.Ctx, tx pgx.Tx, timeStart, timeEnd time.Time, user_id uuid.UUID) ([]domain.OTP, error) {
 	//TODO implement me
 	SQL := "SELECT id, user_id, otp, expired_date, created_at, " +
-		"updated_at FROM otp WHERE created_at >= $1 AND created_at <= $2 AND user_id = $3 order by created_at ASC"
+		"updated_at FROM otp WHERE created_at >= $1 AND created_at <= $2 AND user_id = $3 AND deleted_at is null order by created_at ASC"
 
 	rows, err := tx.Query(ctx.Context(), SQL, timeStart, timeEnd, user_id)
 	utils.PanicIfError(err)

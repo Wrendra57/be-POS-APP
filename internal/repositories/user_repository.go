@@ -25,25 +25,23 @@ func NewUserRepository() UserRepository {
 func (r *userRepositoryImpl) InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.User) (domain.User, error) {
 	SQL := "INSERT INTO users(name, gender, telp, birthdate, address) VALUES($1, $2, $3, $4, $5) RETURNING user_id"
 
-	var userID uuid.UUID // Variabel untuk menyimpan user_id yang dikembalikan
+	var userID uuid.UUID
 
-	// Eksekusi query dengan menggunakan QueryRow
 	err := tx.QueryRow(ctx.Context(), SQL, user.Name, user.Gender, user.Telp, user.Birthday, user.Address).Scan(&userID)
 
-	// Periksa apakah terjadi kesalahan
 	if err != nil {
 		fmt.Println("repo insert user ==>  " + err.Error())
-		return user, err // Mengembalikan kesalahan yang terjadi
+		return user, err
 	}
 
-	// Set user_id yang telah didapat dari hasil query ke objek user
 	user.User_id = userID
 	fmt.Println(user)
 	return user, nil
 }
 
 func (r *userRepositoryImpl) FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error) {
-	SQL := "select user_id, name, gender, telp, birthdate,address,created_at,updated_at from users where user_id= ?"
+	SQL := "select user_id, name, gender, telp, birthdate,address,created_at," +
+		"updated_at from users where user_id= $1 and deleted_at is null"
 
 	rows, err := tx.Query(ctx.Context(), SQL, uuid)
 	utils.PanicIfError(err)

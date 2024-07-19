@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
@@ -38,7 +39,8 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
 		createUser, error, err := service.CreateUser(ctx, request)
-
+		fmt.Println("9")
+		fmt.Println(createUser)
 		if err != nil {
 			return exception.CustomResponse(ctx, error.Code, error.Error, nil)
 		}

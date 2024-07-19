@@ -74,6 +74,10 @@ func NotFoundResponse(c *fiber.Ctx, message string) error {
 }
 
 func CustomResponse(c *fiber.Ctx, code int, message string, data interface{}) error {
+	if data == nil {
+		// Use a pointer to nil interface to preserve the nil value in JSON response
+		data = (*interface{})(nil)
+	}
 	return c.Status(code).JSON(JSONResponse{
 		Status:  "failed",
 		Message: message,
