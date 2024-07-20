@@ -16,14 +16,15 @@ type UserRepository interface {
 	FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.UserDetail, error)
 }
 
-type userRepositoryImpl struct {
+type UserRepositoryImpl struct {
 }
 
 func NewUserRepository() UserRepository {
-	return &userRepositoryImpl{}
+	return &UserRepositoryImpl{}
 }
 
-func (r *userRepositoryImpl) InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.User) (domain.User, error) {
+func (r *UserRepositoryImpl) InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.User) (domain.User, error) {
+
 	SQL := "INSERT INTO users(name, gender, telp, birthdate, address) VALUES($1, $2, $3, $4, $5) RETURNING user_id"
 
 	var userID uuid.UUID
@@ -38,11 +39,10 @@ func (r *userRepositoryImpl) InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.U
 	}
 
 	user.User_id = userID
-	fmt.Println(user)
 	return user, nil
 }
 
-func (r *userRepositoryImpl) FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error) {
+func (r *UserRepositoryImpl) FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error) {
 	SQL := "select user_id, name, gender, telp, birthdate,address,created_at," +
 		"updated_at from users where user_id= $1 and deleted_at is null"
 
@@ -61,7 +61,7 @@ func (r *userRepositoryImpl) FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID)
 	}
 }
 
-func (r *userRepositoryImpl) FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.UserDetail, error) {
+func (r *UserRepositoryImpl) FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.UserDetail, error) {
 	SQL := `SELECT u.user_id   AS user_id,
 				   o.email     AS email,
 				   o.username  AS username,

@@ -165,12 +165,11 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 func (s userServiceImpl) AuthMe(ctx *fiber.Ctx) (domain.UserDetail, exception.CustomEror, bool) {
 	//TODO implement me
 	userId, _ := ctx.Locals("user_id").(uuid.UUID)
-	user := domain.UserDetail{}
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx, tx)
 
-	user, err = s.UserRepository.FindUserDetail(ctx, tx, userId)
+	user, err := s.UserRepository.FindUserDetail(ctx, tx, userId)
 	if err != nil {
 		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "user not found"}, false
 	}

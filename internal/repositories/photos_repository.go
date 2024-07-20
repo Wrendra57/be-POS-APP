@@ -1,8 +1,10 @@
 package repositories
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
+	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -10,6 +12,7 @@ import (
 
 type PhotosRepository interface {
 	Insert(ctx *fiber.Ctx, tx pgx.Tx, photos domain.Photos) (domain.Photos, error)
+	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.Photos, error)
 }
 
 type PhotosRepositoryImpl struct {
@@ -36,4 +39,22 @@ func (p PhotosRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, photos domain.Ph
 
 	photos.Id = id
 	return photos, nil
+}
+
+func (p PhotosRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.Photos, error) {
+	//TODO implement me
+	SQL := "SELECT id, url, owner_id FROM photos WHERE owner_id = $1 AND deleted_at is null"
+
+	rows, err := tx.Query(ctx.Context(), SQL, uuid)
+	utils.PanicIfError(err)
+	defer rows.Close()
+
+	photos := domain.Photos{}
+	if rows.Next() {
+		err := rows.Scan(&photos.Id, &photos.Url, &photos.Owner)
+		utils.PanicIfError(err)
+		return photos, nil
+	} else {
+		return photos, errors.New("user not found")
+	}
 }

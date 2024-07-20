@@ -1,0 +1,41 @@
+//TODO implement me
+	userId, _ := ctx.Locals("user_id").(uuid.UUID)
+	user := domain.UserDetail{}
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx, tx)
+
+	//user, err = s.UserRepository.FindUserDetail(ctx, tx, userId)
+	//if err != nil {
+	//	return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "user not found"}, false
+	//}
+
+	u, err := s.UserRepository.FindByID(ctx, tx, userId)
+	if err != nil {
+		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "User not found"}, false
+	}
+	o, err := s.OauthRepository.FindByUUID(ctx, tx, userId)
+	if err != nil {
+		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "oauth not found"}, false
+
+	}
+	p, err := s.PhotoRepository.FindByUUID(ctx, tx, userId)
+	if err != nil {
+		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "photo not found"}, false
+	}
+	r, err := s.RoleRepository.FindByUserId(ctx, tx, userId)
+	if err != nil {
+		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "role not found"}, false
+	}
+
+	user.User_id = userId
+	user.Email = o.Email
+	user.Username = o.Username
+	user.Name = u.Name
+	user.Gender = u.Gender
+	user.Telp = u.Telp
+	user.Birthday = u.Birthday
+	user.Address = u.Address
+	user.Foto_profile = p.Url
+	user.Role = r.Role
+	user.Created_at = u.Created_at
