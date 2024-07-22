@@ -15,6 +15,8 @@ import (
 
 type CategoryService interface {
 	CreateCategory(ctx *fiber.Ctx, r webrequest.CategoryCreateReq) (domain.Category, exception.CustomEror, bool)
+	FindByParamsCategory(ctx *fiber.Ctx, r webrequest.CategoryFindByParam) ([]domain.Category, exception.CustomEror,
+		bool)
 }
 
 type categoryServiceImpl struct {
@@ -49,4 +51,19 @@ func (s categoryServiceImpl) CreateCategory(ctx *fiber.Ctx, r webrequest.Categor
 		return domain.Category{}, exception.CustomEror{Code: 500, Error: "Invalid Server Error"}, false
 	}
 	return category, exception.CustomEror{}, true
+}
+
+func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.CategoryFindByParam) ([]domain.Category, exception.CustomEror, bool) {
+	//TODO implement me
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx, tx)
+	c := webrequest.CategoryFindByParam{
+		Params: r.Params,
+		Limit:  r.Limit,
+		Offset: (r.Offset - 1) * r.Limit,
+	}
+	categories := s.CategoryRepo.FindByParams(ctx, tx, c)
+
+	return categories, exception.CustomEror{}, true
 }

@@ -31,3 +31,23 @@ func CreateCategory(service services.CategoryService, validate *validator.Valida
 	}
 
 }
+func FindByParams(service services.CategoryService, validate *validator.Validate) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		request := webrequest.CategoryFindByParam{}
+		if err := ctx.BodyParser(&request); err != nil {
+			fmt.Println(err)
+			return exception.CustomResponse(ctx, 500, "Internal server error", err)
+		}
+		//	validasi
+		if err := pkg.ValidateStruct(&request, validate); err != nil {
+			errors := exception.FormatValidationError(err)
+			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
+		}
+		c, errs, e := service.FindByParamsCategory(ctx, request)
+		if e == false {
+			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
+		}
+		return exception.SuccessResponse(ctx, "success", c)
+	}
+
+}

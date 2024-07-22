@@ -9,6 +9,6 @@ import (
 )
 
 func CategoriesRoutes(app fiber.Router, category services.CategoryService, validate *validator.Validate) {
-	app.Post("v1/brands", middleware.Authenticate(), controllers.CreateCategory(category, validate))
-
+	app.Post("v1/categories", middleware.Authenticate(), controllers.CreateCategory(category, validate))
+	app.Post("/v1/categories/search", controllers.FindByParams(category, validate))
 }
