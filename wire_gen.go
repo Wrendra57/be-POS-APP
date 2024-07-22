@@ -40,7 +40,9 @@ func InitializeApp() (*fiber.App, func(), error) {
 	photosService := services.NewPhotosService(photosRepository, pool, validate)
 	categoriesRespository := repositories.NewCategoriesRepository()
 	categoryService := services.NewCategoryService(categoriesRespository, pool, validate)
-	app, cleanup2, err := NewApp(pool, client, validate, userService, otpService, photosService, categoryService)
+	brandRepository := repositories.NewBrandRepository()
+	brandService := services.NewBrandService(brandRepository, pool, validate)
+	app, cleanup2, err := NewApp(pool, client, validate, userService, otpService, photosService, categoryService, brandService)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
@@ -61,6 +63,7 @@ func NewApp(
 	otpService services.OTPService,
 	photoService services.PhotosService,
 	categoryService services.CategoryService,
+	brandService services.BrandService,
 ) (*fiber.App, func(), error) {
 
 	app := fiber.New()
@@ -77,6 +80,7 @@ func NewApp(
 	routes.OtpRoutes(api, otpService, validate)
 	routes.FileRoutes(api, photoService, validate)
 	routes.CategoriesRoutes(api, categoryService, validate)
+	routes.BrandRoutes(api, brandService, validate)
 
 	cleanup := func() {
 		DB.Close()
