@@ -3,7 +3,7 @@ package users
 import (
 	"encoding/json"
 	"fmt"
-	be "github.com/Wrendra57/Pos-app-be/cmd"
+	"github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/test"
@@ -35,7 +35,7 @@ func TestRegisterUserSuccess(t *testing.T) {
 	config.InitConfig()
 
 	fmt.Println("init server")
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}

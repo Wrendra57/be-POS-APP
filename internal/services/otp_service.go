@@ -56,8 +56,7 @@ func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) (domain.OTP, exc
 	}
 	otp, err = s.OTPRepository.Insert(ctx, tx, otp)
 	if err != nil {
-		fmt.Println(err)
-		return domain.OTP{}, exception.CustomEror{Code: 400, Error: "Internal Server Error"}, false
+		return domain.OTP{}, exception.CustomEror{Code: 500, Error: "Internal Server Error"}, false
 	}
 	return otp, exception.CustomEror{}, true
 }
