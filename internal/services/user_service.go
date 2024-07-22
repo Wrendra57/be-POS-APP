@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/config"
@@ -14,6 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"time"
 )
 
@@ -32,10 +34,11 @@ type userServiceImpl struct {
 	PhotoRepository repositories.PhotosRepository
 	DB              *pgxpool.Pool
 	Validate        *validator.Validate
+	RedisDB         *redis.Client
 }
 
 func NewUserService(db *pgxpool.Pool,
-	validate *validator.Validate, userRepo repositories.UserRepository,
+	validate *validator.Validate, rdb *redis.Client, userRepo repositories.UserRepository,
 	oauthRepo repositories.OauthRepository, otpRepo repositories.OtpRepository, roleRepo repositories.RoleRepository,
 	photoRepo repositories.PhotosRepository) UserService {
 	return &userServiceImpl{
@@ -45,6 +48,7 @@ func NewUserService(db *pgxpool.Pool,
 		PhotoRepository: photoRepo,
 		RoleRepository:  roleRepo,
 		DB:              db,
+		RedisDB:         rdb,
 		Validate:        validate,
 	}
 }
@@ -58,24 +62,27 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx, tx)
 
+	//check email in db
 	_, err = s.OauthRepository.FindByEmail(ctx, tx, request.Email)
 	if err == nil {
 		return "", exception.CustomEror{Code: fiber.StatusBadRequest,
 			Error: "email already exists"}, errors.New("Email already exist")
 	}
-	fmt.Println("1")
+
+	//check username in db
 	_, err = s.OauthRepository.FindByUserName(ctx, tx, request.Username)
 	if err == nil {
 		return "", exception.CustomEror{Code: fiber.StatusBadRequest,
 			Error: "Username already exists"}, errors.New("Username already exist")
 	}
-	fmt.Println("2")
+
+	//hashing password using bycript
 	hashedPassword, err := utils.HashPassword(request.Password)
 	if err != nil {
 		return "", exception.CustomEror{Code: fiber.StatusInternalServerError,
 			Error: "Error hashing password "}, err
 	}
-	fmt.Println("3")
+
 	user := domain.User{
 		Name:       request.Name,
 		Gender:     request.Gender,
@@ -94,30 +101,32 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 		Updated_at: time.Now(),
 	}
 
+	//insert to db users
 	user, err = s.UserRepository.InsertUser(ctx, tx, user)
 	utils.PanicIfError(err)
-	fmt.Println("4")
-	oauth.User_id = user.User_id
 
+	//insert to db oauths
+	oauth.User_id = user.User_id
 	oauth, err = s.OauthRepository.InsertOauth(ctx, tx, oauth)
 	utils.PanicIfError(err)
 
-	//create role
+	//insert to db roles
 	role, err := s.RoleRepository.Insert(ctx, tx, domain.Roles{Role: "member", User_id: user.User_id})
-	fmt.Println("err sdds==>", err)
 	utils.PanicIfError(err)
 
-	//Creting OTP
+	//create OTP using random 6 angka
 	otp := domain.OTP{Otp: utils.GenerateOTP(), User_id: user.User_id, Expired_date: time.Now().Add(time.Minute * 3),
 		Created_at: time.Now(), Updated_at: time.Now()}
 
+	//Insert OTP to db
 	otp, err = s.OtpRepository.Insert(ctx, tx, otp)
 	utils.PanicIfError(err)
 
-	//insert photo default
+	//insert photo default to db
 	_, err = s.PhotoRepository.Insert(ctx, tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
 	utils.PanicIfError(err)
 
+	//sending otp via email
 	//strOTP := "ini kode token kamu " + otp.Otp
 	//err = utils.SendEmail("wrendra57@gmail.com", "OTP-ACCOUNT", strOTP)
 	//utils.PanicIfError(err)
@@ -131,11 +140,12 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 
 func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginRequest) (webrespones.TokenResp, exception.CustomEror,
 	bool) {
-	// start database tx
+	// begin database tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx, tx)
 
+	//get data from db
 	o, err := s.OauthRepository.FindByUsernameOrEmail(ctx, tx, request.UserName)
 	if err != nil {
 		return webrespones.TokenResp{}, exception.CustomEror{Code: fiber.StatusBadRequest,
@@ -145,6 +155,7 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 		return webrespones.TokenResp{}, exception.CustomEror{Code: fiber.StatusBadRequest,
 			Error: "Account not enabled"}, false
 	}
+	//compare password
 	comparePassword := utils.CheckPasswordHash(request.Password, o.Password)
 
 	if !comparePassword {
@@ -152,9 +163,11 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 			Error: "Account / Password was wrong"}, false
 	}
 
+	//get role by user id
 	role, err := s.RoleRepository.FindByUserId(ctx, tx, o.User_id)
 	utils.PanicIfError(err)
 
+	//generate token jwt from user_id, role
 	tokenJwt, err := utils.GenerateJWT(o.User_id, role.Role)
 	utils.PanicIfError(err)
 
@@ -165,14 +178,35 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 func (s userServiceImpl) AuthMe(ctx *fiber.Ctx) (domain.UserDetail, exception.CustomEror, bool) {
 	//TODO implement me
 	userId, _ := ctx.Locals("user_id").(uuid.UUID)
+	var user domain.UserDetail
+
+	//check data in redis
+	result := s.RedisDB.Get(ctx.Context(), userId.String())
+	if len(result.Val()) != 0 {
+		err := json.Unmarshal([]byte(result.Val()), &user)
+		utils.PanicIfError(err)
+		fmt.Println(result.Val())
+		return user, exception.CustomEror{}, true
+	}
+
+	//begin db tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx, tx)
 
-	user, err := s.UserRepository.FindUserDetail(ctx, tx, userId)
+	//get data from db
+	user, err = s.UserRepository.FindUserDetail(ctx, tx, userId)
 	if err != nil {
 		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "user not found"}, false
 	}
+
+	//convert to json
+	jsonData, err := json.Marshal(user)
+	utils.PanicIfError(err)
+
+	//insert to redis
+	err = s.RedisDB.Set(ctx.Context(), userId.String(), jsonData, 60*time.Second).Err()
+	utils.PanicIfError(err)
 
 	return user, exception.CustomEror{}, true
 }

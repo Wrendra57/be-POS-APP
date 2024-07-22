@@ -18,6 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 // Injectors from wire.go:
@@ -27,16 +28,17 @@ func InitializeApp() (*fiber.App, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	client := db.SetupRedis1()
 	validate := pkg.NewValidate()
 	userRepository := repositories.NewUserRepository()
 	oauthRepository := repositories.NewOauthRepository()
 	otpRepository := repositories.NewOtpRepository()
 	roleRepository := repositories.NewRoleRepository()
 	photosRepository := repositories.NewPhotosRepository()
-	userService := services.NewUserService(pool, validate, userRepository, oauthRepository, otpRepository, roleRepository, photosRepository)
+	userService := services.NewUserService(pool, validate, client, userRepository, oauthRepository, otpRepository, roleRepository, photosRepository)
 	otpService := services.NewOTPService(oauthRepository, userRepository, pool, validate, otpRepository)
 	photosService := services.NewPhotosService(photosRepository, pool, validate)
-	app, cleanup2, err := NewApp(pool, validate, userService, otpService, photosService)
+	app, cleanup2, err := NewApp(pool, client, validate, userService, otpService, photosService)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
@@ -51,6 +53,7 @@ func InitializeApp() (*fiber.App, func(), error) {
 
 func NewApp(
 	DB *pgxpool.Pool,
+	RDB *redis.Client,
 	validate *validator.Validate,
 	userService services.UserService,
 	otpService services.OTPService,
@@ -73,6 +76,7 @@ func NewApp(
 
 	cleanup := func() {
 		DB.Close()
+		_ = RDB.Close()
 	}
 
 	return app, cleanup, nil

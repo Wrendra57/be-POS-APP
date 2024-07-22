@@ -3,7 +3,7 @@ package users
 import (
 	"encoding/json"
 	"fmt"
-	be "github.com/Wrendra57/Pos-app-be"
+	be "github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/test"

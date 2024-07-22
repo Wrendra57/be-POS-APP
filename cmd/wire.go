@@ -13,6 +13,7 @@ import (
 	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/google/wire"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 )
 
 func InitializeApp() (*fiber.App, func(), error) {
@@ -28,12 +29,14 @@ func InitializeApp() (*fiber.App, func(), error) {
 		services.NewOTPService,
 		services.NewPhotosService,
 		NewApp,
+		db.SetupRedis1,
 	)
 
 	return nil, nil, nil
 }
 func NewApp(
 	DB *pgxpool.Pool,
+	RDB *redis.Client,
 	validate *validator.Validate,
 	userService services.UserService,
 	otpService services.OTPService,
@@ -56,6 +59,7 @@ func NewApp(
 
 	cleanup := func() {
 		DB.Close()
+		_ = RDB.Close()
 	}
 
 	return app, cleanup, nil
