@@ -60,13 +60,14 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	// start database tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	//check email in db
 	_, err = s.OauthRepository.FindByEmail(ctx, tx, request.Email)
 	if err == nil {
+		fmt.Println(err)
 		return "", exception.CustomEror{Code: fiber.StatusBadRequest,
-			Error: "email already exists"}, errors.New("Email already exist")
+			Error: "Email already exists"}, errors.New("Email already exist")
 	}
 
 	//check username in db
@@ -102,16 +103,16 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	}
 
 	//insert to db users
-	user, err = s.UserRepository.InsertUser(ctx, tx, user)
+	user, err = s.UserRepository.InsertUser(ctx.Context(), tx, user)
 	utils.PanicIfError(err)
 
 	//insert to db oauths
 	oauth.User_id = user.User_id
-	oauth, err = s.OauthRepository.InsertOauth(ctx, tx, oauth)
+	oauth, err = s.OauthRepository.InsertOauth(ctx.Context(), tx, oauth)
 	utils.PanicIfError(err)
 
 	//insert to db roles
-	role, err := s.RoleRepository.Insert(ctx, tx, domain.Roles{Role: "member", User_id: user.User_id})
+	role, err := s.RoleRepository.Insert(ctx.Context(), tx, domain.Roles{Role: "member", User_id: user.User_id})
 	utils.PanicIfError(err)
 
 	//create OTP using random 6 angka
@@ -119,11 +120,11 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 		Created_at: time.Now(), Updated_at: time.Now()}
 
 	//Insert OTP to db
-	otp, err = s.OtpRepository.Insert(ctx, tx, otp)
+	otp, err = s.OtpRepository.Insert(ctx.Context(), tx, otp)
 	utils.PanicIfError(err)
 
 	//insert photo default to db
-	_, err = s.PhotoRepository.Insert(ctx, tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
+	_, err = s.PhotoRepository.Insert(ctx.Context(), tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
 	utils.PanicIfError(err)
 
 	//sending otp via email
@@ -143,7 +144,7 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 	// begin database tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	//get data from db
 	o, err := s.OauthRepository.FindByUsernameOrEmail(ctx, tx, request.UserName)
@@ -192,7 +193,7 @@ func (s userServiceImpl) AuthMe(ctx *fiber.Ctx) (domain.UserDetail, exception.Cu
 	//begin db tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	//get data from db
 	user, err = s.UserRepository.FindUserDetail(ctx, tx, userId)

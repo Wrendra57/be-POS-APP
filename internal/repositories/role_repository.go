@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
@@ -11,7 +12,7 @@ import (
 )
 
 type RoleRepository interface {
-	Insert(ctx *fiber.Ctx, tx pgx.Tx, roles domain.Roles) (domain.Roles, error)
+	Insert(ctx context.Context, tx pgx.Tx, roles domain.Roles) (domain.Roles, error)
 	FindByUserId(ctx *fiber.Ctx, tx pgx.Tx, userId uuid.UUID) (domain.Roles, error)
 }
 
@@ -22,12 +23,12 @@ func NewRoleRepository() RoleRepository {
 	return &roleRepositoryImpl{}
 }
 
-func (r roleRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, roles domain.Roles) (domain.Roles, error) {
+func (r roleRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, roles domain.Roles) (domain.Roles, error) {
 	//TODO implement me
 	SQL := "INSERT INTO roles(user_id, role) VALUES($1, $2) returning id"
 
 	var id int
-	row := tx.QueryRow(ctx.Context(), SQL, roles.User_id, roles.Role)
+	row := tx.QueryRow(ctx, SQL, roles.User_id, roles.Role)
 
 	err := row.Scan(&id)
 

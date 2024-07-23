@@ -50,9 +50,9 @@ func customErrorMessage(err *ValidationErrorResponse) string {
 func ValidateErrorResponse(c *fiber.Ctx, message string, data []*ValidationErrorResponse) error {
 
 	return c.Status(fiber.StatusBadRequest).JSON(JSONResponse{
-		Status:  "error",
+		Status:  "failed",
 		Message: customErrorMessage(data[0]),
-		Data:    data,
+		Data:    nil,
 	})
 
 }

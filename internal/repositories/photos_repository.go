@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
@@ -11,7 +12,7 @@ import (
 )
 
 type PhotosRepository interface {
-	Insert(ctx *fiber.Ctx, tx pgx.Tx, photos domain.Photos) (domain.Photos, error)
+	Insert(ctx context.Context, tx pgx.Tx, photos domain.Photos) (domain.Photos, error)
 	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.Photos, error)
 }
 
@@ -22,13 +23,13 @@ func NewPhotosRepository() PhotosRepository {
 	return &PhotosRepositoryImpl{}
 }
 
-func (p PhotosRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, photos domain.Photos) (domain.Photos, error) {
+func (p PhotosRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, photos domain.Photos) (domain.Photos, error) {
 	//TODO implement me
 	SQL := "INSERT INTO photos(url,owner_id) VALUES($1, $2) RETURNING id"
 
 	var id uuid.UUID
 
-	row := tx.QueryRow(ctx.Context(), SQL, photos.Url, photos.Owner)
+	row := tx.QueryRow(ctx, SQL, photos.Url, photos.Owner)
 
 	err := row.Scan(&id)
 

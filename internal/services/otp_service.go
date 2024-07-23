@@ -44,7 +44,7 @@ func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) (domain.OTP, exc
 
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	//create otp
 	otp := domain.OTP{
@@ -54,7 +54,7 @@ func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) (domain.OTP, exc
 		Created_at:   now,
 		Updated_at:   now,
 	}
-	otp, err = s.OTPRepository.Insert(ctx, tx, otp)
+	otp, err = s.OTPRepository.Insert(ctx.Context(), tx, otp)
 	if err != nil {
 		return domain.OTP{}, exception.CustomEror{Code: 500, Error: "Internal Server Error"}, false
 	}
@@ -67,7 +67,7 @@ func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o string) (exception
 	// start database tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	//validate user id
 	user, err := s.OauthRepo.FindByUUID(ctx, tx, user_id)
@@ -104,7 +104,7 @@ func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, userId uuid.UUID) (domain.OTP
 
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	oauth, err := s.OauthRepo.FindByUUID(ctx, tx, userId)
 	if err != nil {

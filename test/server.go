@@ -3,7 +3,9 @@ package test
 import (
 	"context"
 	"fmt"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/spf13/viper"
 )
 
 func SetupDBTest() (*pgxpool.Pool, func(), error) {
@@ -30,14 +32,32 @@ func SetupDBTest() (*pgxpool.Pool, func(), error) {
 }
 
 func TruncateDB(db *pgxpool.Pool) error {
-	DB, err := db.Begin(context.Background())
+	tx, err := db.Begin(context.Background())
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("ds")
-	SQL := `TRUNCATE TABLE brands, categories,devices,inventories,inventory_transactions,oauths,order_items,orders,otp,photos,products,roles,suppliers,users RESTART IDENTITY CASCADE`
-	_ = DB.QueryRow(context.Background(), SQL)
-	fmt.Println("executed")
-	DB.Commit(context.Background())
+	defer func() {
+		if err != nil {
+			tx.Rollback(context.Background())
+		} else {
+			err = tx.Commit(context.Background())
+		}
+	}()
+	SQL := `TRUNCATE TABLE brands, categories, devices, inventories, inventory_transactions, oauths, order_items, 
+orders, otp, photos, products, roles, suppliers, users RESTART IDENTITY CASCADE`
+	_, err = tx.Exec(context.Background(), SQL)
+	if err != nil {
+		return fmt.Errorf("failed to truncate tables: %w", err)
+	}
+
 	return nil
+}
+func InitConfigTest() {
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AddConfigPath("../../..")
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file: %v", err)
+	}
 }

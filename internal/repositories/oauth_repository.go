@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
@@ -11,7 +12,7 @@ import (
 )
 
 type OauthRepository interface {
-	InsertOauth(ctx *fiber.Ctx, tx pgx.Tx, oauth domain.Oauth) (domain.Oauth, error)
+	InsertOauth(ctx context.Context, tx pgx.Tx, oauth domain.Oauth) (domain.Oauth, error)
 	FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email string) (domain.Oauth, error)
 	FindByUserName(ctx *fiber.Ctx, tx pgx.Tx, string2 string) (domain.Oauth, error)
 	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.Oauth, error)
@@ -26,11 +27,11 @@ func NewOauthRepository() OauthRepository {
 	return &oauthRepositoryImpl{}
 }
 
-func (r *oauthRepositoryImpl) InsertOauth(ctx *fiber.Ctx, tx pgx.Tx, oauth domain.Oauth) (domain.Oauth, error) {
+func (r *oauthRepositoryImpl) InsertOauth(ctx context.Context, tx pgx.Tx, oauth domain.Oauth) (domain.Oauth, error) {
 	SQL := "INSERT INTO oauths(email, password, username, user_id) VALUES($1, $2, $3, $4) RETURNING id"
 
 	var id int
-	row := tx.QueryRow(ctx.Context(), SQL, oauth.Email, oauth.Password, oauth.Username, oauth.User_id)
+	row := tx.QueryRow(ctx, SQL, oauth.Email, oauth.Password, oauth.Username, oauth.User_id)
 
 	err := row.Scan(&id)
 
@@ -55,7 +56,7 @@ func (r *oauthRepositoryImpl) FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email strin
 		&oauth.Created_at, &oauth.Updated_at)
 
 	if err != nil {
-		fmt.Println("repo oauth find by username ==>  " + err.Error())
+		fmt.Println("repo oauth find by email ==>  " + err.Error())
 		return oauth, errors.New("user not found")
 	}
 

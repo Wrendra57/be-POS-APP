@@ -53,7 +53,7 @@ func (s photosServiceImpl) UploadPhotos(ctx *fiber.Ctx, request webrequest.Photo
 
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	// Buat direktori uploads jika belum ada
 	uploadsDir := "./storage/photos"
@@ -70,7 +70,7 @@ func (s photosServiceImpl) UploadPhotos(ctx *fiber.Ctx, request webrequest.Photo
 
 	fmt.Println(filepath)
 
-	f, err = s.PhotoRepo.Insert(ctx, tx, f)
+	f, err = s.PhotoRepo.Insert(ctx.Context(), tx, f)
 	utils.PanicIfError(err)
 
 	return f, exception.CustomEror{}, true

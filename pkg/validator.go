@@ -1,12 +1,11 @@
 package pkg
 
 import (
-	"fmt"
 	"github.com/go-playground/validator/v10"
 )
 
 func NewValidate() *validator.Validate {
-	fmt.Println("init validator")
+	//fmt.Println("init validator")
 	validate := validator.New()
 	return validate
 }

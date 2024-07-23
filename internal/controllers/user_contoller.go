@@ -21,9 +21,10 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 
 		// parsing date
 		layout := "2006-01-02"
+		fmt.Println(request.Birthday)
 		if request.Birthday == "" {
 			message := "Birthdate is required"
-			exception.CustomResponse(ctx, fiber.StatusBadRequest, message, nil)
+			return exception.CustomResponse(ctx, fiber.StatusBadRequest, message, nil)
 		}
 		parsedTime, err := time.Parse(layout, request.Birthday)
 		if err != nil {

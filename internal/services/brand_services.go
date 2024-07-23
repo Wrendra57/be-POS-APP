@@ -35,7 +35,7 @@ func (s brandServiceImpl) CreateBrand(ctx *fiber.Ctx, r webrequest.BrandCreateRe
 	//start db tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	brand := domain.Brand{
 		Name:        r.Name,
@@ -53,7 +53,7 @@ func (s brandServiceImpl) ListBrand(ctx *fiber.Ctx, r webrequest.BrandGetRequest
 	//start db tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	brandReq := webrequest.BrandGetRequest{
 		Params: r.Params,

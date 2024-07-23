@@ -38,7 +38,7 @@ func (s categoryServiceImpl) CreateCategory(ctx *fiber.Ctx, r webrequest.Categor
 	//start db tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	category := domain.Category{
 		Name:        r.Name,
@@ -57,7 +57,7 @@ func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.C
 	//TODO implement me
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(ctx, tx)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
 	c := webrequest.CategoryFindByParam{
 		Params: r.Params,
 		Limit:  r.Limit,

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
@@ -11,7 +12,7 @@ import (
 )
 
 type UserRepository interface {
-	InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.User) (domain.User, error)
+	InsertUser(ctx context.Context, tx pgx.Tx, user domain.User) (domain.User, error)
 	FindByID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.User, error)
 	FindUserDetail(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.UserDetail, error)
 }
@@ -23,13 +24,13 @@ func NewUserRepository() UserRepository {
 	return &UserRepositoryImpl{}
 }
 
-func (r *UserRepositoryImpl) InsertUser(ctx *fiber.Ctx, tx pgx.Tx, user domain.User) (domain.User, error) {
+func (r *UserRepositoryImpl) InsertUser(ctx context.Context, tx pgx.Tx, user domain.User) (domain.User, error) {
 
 	SQL := "INSERT INTO users(name, gender, telp, birthdate, address) VALUES($1, $2, $3, $4, $5) RETURNING user_id"
 
 	var userID uuid.UUID
 
-	row := tx.QueryRow(ctx.Context(), SQL, user.Name, user.Gender, user.Telp, user.Birthday, user.Address)
+	row := tx.QueryRow(ctx, SQL, user.Name, user.Gender, user.Telp, user.Birthday, user.Address)
 
 	err := row.Scan(&userID)
 

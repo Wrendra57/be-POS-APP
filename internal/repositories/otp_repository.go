@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
@@ -12,7 +13,7 @@ import (
 )
 
 type OtpRepository interface {
-	Insert(ctx *fiber.Ctx, tx pgx.Tx, otp domain.OTP) (domain.OTP, error)
+	Insert(ctx context.Context, tx pgx.Tx, otp domain.OTP) (domain.OTP, error)
 	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error)
 	FindAllByUserIdAroundTime(ctx *fiber.Ctx, tx pgx.Tx, timeStart, timeEnd time.Time, user_id uuid.UUID) ([]domain.OTP, error)
 }
@@ -24,13 +25,13 @@ func NewOtpRepository() OtpRepository {
 	return &OtpRepositoryImpl{}
 }
 
-func (OtpRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, o domain.OTP) (domain.OTP, error) {
+func (OtpRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, o domain.OTP) (domain.OTP, error) {
 	//TODO implement me
 	SQL := "INSERT INTO otp(user_id, otp, expired_date, created_at, updated_at) VALUES($1, $2, $3, $4,$5) returning id"
 
 	var id int
 
-	row := tx.QueryRow(ctx.Context(), SQL, o.User_id, o.Otp, o.Expired_date, time.Now(), time.Now())
+	row := tx.QueryRow(ctx, SQL, o.User_id, o.Otp, o.Expired_date, time.Now(), time.Now())
 
 	err := row.Scan(&id)
 

@@ -1,8 +1,8 @@
 package config
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
+	"log"
 )
 
 type Config struct {
@@ -10,6 +10,12 @@ type Config struct {
 }
 
 func InitConfig() {
-	fmt.Println("init config")
+
+	viper.SetConfigName(".env")
+	viper.SetConfigType("env")
+	viper.AddConfigPath("./")
 	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file: %v", err)
+	}
 }
