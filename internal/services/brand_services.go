@@ -14,6 +14,7 @@ import (
 
 type BrandService interface {
 	CreateBrand(ctx *fiber.Ctx, r webrequest.BrandCreateReq) (domain.Brand, exception.CustomEror, bool)
+	ListBrand(ctx *fiber.Ctx, r webrequest.BrandGetRequest) ([]domain.Brand, exception.CustomEror, bool)
 }
 
 type brandServiceImpl struct {
@@ -47,4 +48,20 @@ func (s brandServiceImpl) CreateBrand(ctx *fiber.Ctx, r webrequest.BrandCreateRe
 	}
 
 	return brand, exception.CustomEror{}, true
+}
+func (s brandServiceImpl) ListBrand(ctx *fiber.Ctx, r webrequest.BrandGetRequest) ([]domain.Brand, exception.CustomEror, bool) {
+	//start db tx
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx, tx)
+
+	brandReq := webrequest.BrandGetRequest{
+		Params: r.Params,
+		Limit:  r.Limit,
+		Offset: (r.Offset - 1) * r.Limit,
+	}
+
+	brands := s.BrandRepo.ListAll(ctx, tx, brandReq)
+
+	return brands, exception.CustomEror{}, true
 }

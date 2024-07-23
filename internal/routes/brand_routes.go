@@ -10,4 +10,5 @@ import (
 
 func BrandRoutes(app fiber.Router, brand services.BrandService, validate *validator.Validate) {
 	app.Post("v1/brands", middleware.Authenticate(), controllers.CreateBrand(brand, validate))
+	app.Get("v1/brands", controllers.ListBrand(brand, validate))
 }
