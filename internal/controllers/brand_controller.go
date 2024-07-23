@@ -17,7 +17,6 @@ func CreateBrand(service services.BrandService, validate *validator.Validate) fi
 		if err := ctx.BodyParser(&request); err != nil {
 			fmt.Println(err)
 			return exception.CustomResponse(ctx, 500, "Internal server error", nil)
-
 		}
 		//	validasi
 		if err := pkg.ValidateStruct(&request, validate); err != nil {
@@ -30,7 +29,6 @@ func CreateBrand(service services.BrandService, validate *validator.Validate) fi
 		}
 		return exception.SuccessResponse(ctx, "success", b)
 	}
-
 }
 
 func ListBrand(service services.BrandService, validate *validator.Validate) fiber.Handler {
