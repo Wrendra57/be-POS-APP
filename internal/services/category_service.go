@@ -58,6 +58,7 @@ func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.C
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx.Context(), tx)
+
 	c := webrequest.CategoryFindByParam{
 		Params: r.Params,
 		Limit:  r.Limit,

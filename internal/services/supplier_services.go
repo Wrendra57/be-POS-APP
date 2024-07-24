@@ -14,6 +14,7 @@ import (
 
 type SupplierService interface {
 	CreateSupplier(ctx *fiber.Ctx, r webrequest.SupplierRequest) (domain.Supplier, exception.CustomEror, bool)
+	FindByParamSupplier(ctx *fiber.Ctx, request webrequest.SupplierListRequest) ([]domain.Supplier, bool)
 }
 
 type supplierServiceImpl struct {
@@ -46,4 +47,18 @@ func (s supplierServiceImpl) CreateSupplier(ctx *fiber.Ctx, r webrequest.Supplie
 	}
 	return supplier, exception.CustomEror{}, true
 
+}
+func (s supplierServiceImpl) FindByParamSupplier(ctx *fiber.Ctx, request webrequest.SupplierListRequest) ([]domain.Supplier, bool) {
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
+
+	suplier := webrequest.SupplierListRequest{
+		Params: request.Params,
+		Limit:  request.Limit,
+		Offset: (request.Offset - 1) * request.Limit,
+	}
+	suppliers := s.SupplierRepo.ListAll(ctx.Context(), tx, suplier)
+
+	return suppliers, true
 }

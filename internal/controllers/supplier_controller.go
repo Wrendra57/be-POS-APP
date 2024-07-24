@@ -29,3 +29,21 @@ func CreateSupplier(service services.SupplierService, validate *validator.Valida
 		return exception.SuccessResponse(ctx, "success", s)
 	}
 }
+
+func FindByParamsSupplier(service services.SupplierService, validate *validator.Validate) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		request := webrequest.SupplierListRequest{}
+		if err := ctx.BodyParser(&request); err != nil {
+			fmt.Println(err)
+			return exception.CustomResponse(ctx, 500, "Internal server error", err)
+		}
+		//	validasi
+		if err := pkg.ValidateStruct(&request, validate); err != nil {
+			errors := exception.FormatValidationError(err)
+			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
+		}
+		s, _ := service.FindByParamSupplier(ctx, request)
+		return exception.SuccessResponse(ctx, "success", s)
+	}
+
+}

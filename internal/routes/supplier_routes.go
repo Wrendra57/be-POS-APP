@@ -10,4 +10,5 @@ import (
 
 func SupplierRoutes(app fiber.Router, supplierService services.SupplierService, validate *validator.Validate) {
 	app.Post("/v1/supplier", middleware.Authenticate(), controllers.CreateSupplier(supplierService, validate))
+	app.Get("/v1/supplier", controllers.FindByParamsSupplier(supplierService, validate))
 }
