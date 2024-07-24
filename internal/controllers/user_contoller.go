@@ -21,7 +21,6 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 
 		// parsing date
 		layout := "2006-01-02"
-		fmt.Println(request.Birthday)
 		if request.Birthday == "" {
 			message := "Birthdate is required"
 			return exception.CustomResponse(ctx, fiber.StatusBadRequest, message, nil)
@@ -51,6 +50,7 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 			Message: "User created successfully",
 			Data:    createUser,
 		}
+		fmt.Println(createUser)
 		return ctx.Status(fiber.StatusOK).JSON(responseApi)
 	}
 }

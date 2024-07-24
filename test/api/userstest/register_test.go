@@ -1,28 +1,21 @@
-package users__test
+package userstest
 
 import (
-	"context"
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be/cmd"
-	"github.com/Wrendra57/Pos-app-be/config"
-	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
+	be "github.com/Wrendra57/Pos-app-be"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
-	"github.com/Wrendra57/Pos-app-be/internal/repositories"
-	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/Wrendra57/Pos-app-be/test"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 )
 
-func registerTestRequest(t *testing.T, app *fiber.App, method, url, body string) *http.Request {
+func RegisterCreateUserTestRequest(t *testing.T, app *fiber.App, method, url, body string) *http.Request {
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
@@ -31,68 +24,10 @@ func registerTestRequest(t *testing.T, app *fiber.App, method, url, body string)
 	return req
 }
 
-func insertNewUserTest(t *testing.T, db *pgxpool.Pool, request webrequest.UserCreateRequest) (domain.User,
-	domain.Oauth, domain.Roles, domain.OTP, domain.Photos) {
-	userRepo := repositories.NewUserRepository()
-	oauthRepo := repositories.NewOauthRepository()
-	roleRepo := repositories.NewRoleRepository()
-	otpRepo := repositories.NewOtpRepository()
-	photoRepo := repositories.NewPhotosRepository()
-	tx, err := db.BeginTx(context.Background(), config.TxConfig())
-	utils.PanicIfError(err)
-	defer utils.CommitOrRollback(context.Background(), tx)
-
-	hashedPassword, err := utils.HashPassword(request.Password)
-	if err != nil {
-		panic(err)
-	}
-	user := domain.User{
-		Name:       request.Name,
-		Gender:     request.Gender,
-		Telp:       request.Telp,
-		Birthday:   request.BirthdayConversed,
-		Address:    request.Address,
-		Created_at: time.Now(),
-		Updated_at: time.Now(),
-	}
-	oauth := domain.Oauth{
-		Email:      request.Email,
-		Password:   hashedPassword,
-		Is_enabled: false,
-		Username:   request.Username,
-		Created_at: time.Now(),
-		Updated_at: time.Now(),
-	}
-
-	user, err = userRepo.InsertUser(context.Background(), tx, user)
-	utils.PanicIfError(err)
-
-	oauth.User_id = user.User_id
-	//insert to db oauths
-	oauth.User_id = user.User_id
-	oauth, err = oauthRepo.InsertOauth(context.Background(), tx, oauth)
-	utils.PanicIfError(err)
-
-	//insert to db roles
-	role, err := roleRepo.Insert(context.Background(), tx, domain.Roles{Role: "member", User_id: user.User_id})
-	utils.PanicIfError(err)
-
-	//create OTP using random 6 angka
-	otp := domain.OTP{Otp: utils.GenerateOTP(), User_id: user.User_id, Expired_date: time.Now().Add(time.Minute * 3),
-		Created_at: time.Now(), Updated_at: time.Now()}
-
-	//Insert OTP to db
-	otp, err = otpRepo.Insert(context.Background(), tx, otp)
-	utils.PanicIfError(err)
-
-	photo, _ := photoRepo.Insert(context.Background(), tx, domain.Photos{Url: "http://127.0.0.1:8080/foto/default-photo-picture.png", Owner: user.User_id})
-
-	return user, oauth, role, otp, photo
-}
 func TestRegisterUserSuccess(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -132,10 +67,11 @@ func TestRegisterUserSuccess(t *testing.T) {
 
 	jsonData, err := json.Marshal(registerData)
 	if err != nil {
+		t.Log("dwdw")
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -145,18 +81,19 @@ func TestRegisterUserSuccess(t *testing.T) {
 
 	var response webrespones.ResponseApi
 	err = json.Unmarshal(body, &response)
+
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
-	assert.Equalf(t, response.Status, "ok", "response status should be ok")
-	assert.Equalf(t, response.Message, "User created successfully", "response message should be equal")
+	assert.Equalf(t, "ok", response.Status, "response status should be ok")
+	assert.Equalf(t, "User created successfully", response.Message, "response message should be equal")
 	assert.NotEmpty(t, response.Data)
 }
 
 func TestRegisterUserEmailExist(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -176,7 +113,7 @@ func TestRegisterUserEmailExist(t *testing.T) {
 		Password: "password",
 		Username: "testerrr",
 	}
-	_, _, _, _, _ = insertNewUserTest(t, db, req)
+	_, _, _, _, _, _ = InsertNewUserTest(t, db, req)
 
 	db.Close()
 
@@ -202,7 +139,7 @@ func TestRegisterUserEmailExist(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -223,7 +160,7 @@ func TestRegisterUserEmailExist(t *testing.T) {
 func TestRegisterUserFailedBirtdateRequire(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -266,7 +203,7 @@ func TestRegisterUserFailedBirtdateRequire(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -287,7 +224,7 @@ func TestRegisterUserFailedBirtdateRequire(t *testing.T) {
 func TestRegisterUserBirtdateFormatWrong(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -331,7 +268,7 @@ func TestRegisterUserBirtdateFormatWrong(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -352,7 +289,7 @@ func TestRegisterUserBirtdateFormatWrong(t *testing.T) {
 func TestRegisterUserFailedValidationNameRequire(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -395,7 +332,7 @@ func TestRegisterUserFailedValidationNameRequire(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -416,7 +353,7 @@ func TestRegisterUserFailedValidationNameRequire(t *testing.T) {
 func TestRegisterUserFailedValidationNameMinLength(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -460,7 +397,7 @@ func TestRegisterUserFailedValidationNameMinLength(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -481,7 +418,7 @@ func TestRegisterUserFailedValidationNameMinLength(t *testing.T) {
 func TestRegisterUserFailedValidationNameMaxLength(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -525,7 +462,7 @@ func TestRegisterUserFailedValidationNameMaxLength(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -546,7 +483,7 @@ func TestRegisterUserFailedValidationNameMaxLength(t *testing.T) {
 func TestRegisterUserFailedValidationGenderRequire(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -590,7 +527,7 @@ func TestRegisterUserFailedValidationGenderRequire(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 
@@ -611,7 +548,7 @@ func TestRegisterUserFailedValidationGenderRequire(t *testing.T) {
 func TestRegisterUserFailedValidation(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -883,7 +820,7 @@ func TestRegisterUserFailedValidation(t *testing.T) {
 			if err != nil {
 				panic(err)
 			}
-			requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+			requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 			res, err := app.Test(requ, 3000)
 			assert.Nil(t, err)
 
@@ -907,7 +844,7 @@ func TestRegisterUserFailedValidation(t *testing.T) {
 func TestRegisterUserUsernameExist(t *testing.T) {
 	test.InitConfigTest()
 
-	db, _, err := test.SetupDBTest()
+	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)
 	}
@@ -927,7 +864,7 @@ func TestRegisterUserUsernameExist(t *testing.T) {
 		Password: "password",
 		Username: "testerrr",
 	}
-	_, _, _, _, _ = insertNewUserTest(t, db, req)
+	_, _, _, _, _, _ = InsertNewUserTest(t, db, req)
 
 	db.Close()
 
@@ -953,7 +890,7 @@ func TestRegisterUserUsernameExist(t *testing.T) {
 		panic(err)
 	}
 
-	requ := registerTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
+	requ := RegisterCreateUserTestRequest(t, app, "POST", "/api/v1/users/register", string(jsonData))
 	res, err := app.Test(requ, 3000)
 	assert.Nil(t, err)
 

@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func SetupDBTest() (*pgxpool.Pool, func(), error) {
+func SetupDBtest() (*pgxpool.Pool, func(), error) {
 	dbHost := "127.0.0.1"
 	dbPort := "5432"
 	dbUser := "postgres"

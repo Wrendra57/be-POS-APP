@@ -102,7 +102,7 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 		Updated_at: time.Now(),
 	}
 
-	//insert to db users
+	//insert to db userstest
 	user, err = s.UserRepository.InsertUser(ctx.Context(), tx, user)
 	utils.PanicIfError(err)
 

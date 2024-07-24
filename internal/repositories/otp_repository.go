@@ -14,7 +14,7 @@ import (
 
 type OtpRepository interface {
 	Insert(ctx context.Context, tx pgx.Tx, otp domain.OTP) (domain.OTP, error)
-	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error)
+	FindByUUID(ctx context.Context, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error)
 	FindAllByUserIdAroundTime(ctx *fiber.Ctx, tx pgx.Tx, timeStart, timeEnd time.Time, user_id uuid.UUID) ([]domain.OTP, error)
 }
 
@@ -45,11 +45,11 @@ func (OtpRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, o domain.OTP) (d
 	return o, nil
 }
 
-func (OtpRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error) {
+func (OtpRepositoryImpl) FindByUUID(ctx context.Context, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error) {
 	//TODO implement me
 	SQL := "SELECT id, user_id, otp, expired_date, created_at, updated_at FROM otp WHERE user_id = $1 AND deleted_at is null order by otp.created_at desc LIMIT 1"
 
-	rows, err := tx.Query(ctx.Context(), SQL, uuid)
+	rows, err := tx.Query(ctx, SQL, uuid)
 	utils.PanicIfError(err)
 	defer rows.Close()
 

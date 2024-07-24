@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
 	"github.com/gofiber/fiber/v2"
@@ -31,7 +30,7 @@ func Authenticate() fiber.Handler {
 		}
 		c.Locals("user_id", result.User_id)
 		c.Locals("token", tokenString)
-		fmt.Println("sini")
+
 		return c.Next()
 	}
 }

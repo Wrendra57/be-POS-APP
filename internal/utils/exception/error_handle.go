@@ -7,9 +7,10 @@ import (
 )
 
 type JSONResponse struct {
+	Code    int         `json:"code"`
 	Status  string      `json:"status"`
 	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
+	Data    interface{} `json:"data"`
 }
 
 func FormatValidationError(err error) []*ValidationErrorResponse {
@@ -50,6 +51,7 @@ func customErrorMessage(err *ValidationErrorResponse) string {
 func ValidateErrorResponse(c *fiber.Ctx, message string, data []*ValidationErrorResponse) error {
 
 	return c.Status(fiber.StatusBadRequest).JSON(JSONResponse{
+		Code:    fiber.StatusBadRequest,
 		Status:  "failed",
 		Message: customErrorMessage(data[0]),
 		Data:    nil,
@@ -57,8 +59,11 @@ func ValidateErrorResponse(c *fiber.Ctx, message string, data []*ValidationError
 
 }
 func SuccessResponse(c *fiber.Ctx, message string, data interface{}) error {
-
+	if data == nil {
+		data = (*interface{})(nil)
+	}
 	return c.Status(fiber.StatusOK).JSON(JSONResponse{
+		Code:    fiber.StatusOK,
 		Status:  "success",
 		Message: message,
 		Data:    data,
@@ -79,14 +84,16 @@ func CustomResponse(c *fiber.Ctx, code int, message string, data interface{}) er
 		data = (*interface{})(nil)
 	}
 	return c.Status(code).JSON(JSONResponse{
+		Code:    code,
 		Status:  "failed",
 		Message: message,
 		Data:    data,
 	})
 }
 func UnauthorizedRespone(c *fiber.Ctx, message string) error {
-	fmt.Println("ew")
-	return c.Status(fiber.StatusUnauthorized).JSON(JSONResponse{
+	code := fiber.StatusUnauthorized
+	return c.Status(code).JSON(JSONResponse{
+		Code:    code,
 		Status:  "failed",
 		Message: message,
 		Data:    nil,

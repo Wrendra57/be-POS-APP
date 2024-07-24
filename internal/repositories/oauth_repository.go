@@ -16,7 +16,7 @@ type OauthRepository interface {
 	FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email string) (domain.Oauth, error)
 	FindByUserName(ctx *fiber.Ctx, tx pgx.Tx, string2 string) (domain.Oauth, error)
 	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.Oauth, error)
-	Update(ctx *fiber.Ctx, tx pgx.Tx, oauth domain.Oauth, u uuid.UUID) (domain.Oauth, error)
+	Update(ctx context.Context, tx pgx.Tx, oauth domain.Oauth, u uuid.UUID) (domain.Oauth, error)
 	FindByUsernameOrEmail(ctx *fiber.Ctx, tx pgx.Tx, email string) (domain.Oauth, error)
 }
 
@@ -37,7 +37,6 @@ func (r *oauthRepositoryImpl) InsertOauth(ctx context.Context, tx pgx.Tx, oauth 
 
 	if err != nil {
 		fmt.Println("insertoauth ==>  " + err.Error())
-
 		return oauth, err
 	}
 
@@ -98,7 +97,7 @@ func (r *oauthRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, u uuid.UUID)
 	return oauth, nil
 }
 
-func (r *oauthRepositoryImpl) Update(ctx *fiber.Ctx, tx pgx.Tx, o domain.Oauth, u uuid.UUID) (domain.Oauth, error) {
+func (r *oauthRepositoryImpl) Update(ctx context.Context, tx pgx.Tx, o domain.Oauth, u uuid.UUID) (domain.Oauth, error) {
 	SQL := "UPDATE oauths SET "
 	var args []interface{}
 	var index int
@@ -134,13 +133,13 @@ func (r *oauthRepositoryImpl) Update(ctx *fiber.Ctx, tx pgx.Tx, o domain.Oauth, 
 	args = append(args, u)
 
 	// Execute the update query
-	_, err := tx.Exec(ctx.Context(), SQL, args...)
+	_, err := tx.Exec(ctx, SQL, args...)
 	if err != nil {
 		return domain.Oauth{}, fmt.Errorf("failed to update oauth: %w", err)
 	}
 
 	// Retrieve the updated row to return it
-	row := tx.QueryRow(ctx.Context(), "SELECT id, email, password, is_enabled, username, user_id, created_at, "+
+	row := tx.QueryRow(ctx, "SELECT id, email, password, is_enabled, username, user_id, created_at, "+
 		"updated_at FROM oauths WHERE user_id = $1 AND deleted_at is NULL", u)
 
 	var oauth domain.Oauth

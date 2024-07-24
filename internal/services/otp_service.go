@@ -65,7 +65,8 @@ func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) (domain.OTP, exc
 func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o webrequest.ValidateOtpRequest) (exception.CustomEror, bool) {
 	parsedToken, err := utils.ParseJWT(o.Token)
 	if err != nil {
-		return exception.CustomEror{Code: 400, Error: err.Error()}, false
+		fmt.Println(err)
+		return exception.CustomEror{Code: 401, Error: "Unauthorized"}, false
 	}
 	now := time.Now()
 
@@ -76,28 +77,28 @@ func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o webrequest.Validat
 
 	//validate user id
 	user, err := s.OauthRepo.FindByUUID(ctx, tx, parsedToken.User_id)
+
 	if err != nil {
 		return exception.CustomEror{Code: 404, Error: err.Error()}, false
 	}
 	if user.Is_enabled == true {
 		return exception.CustomEror{Code: 400, Error: "Account is already enabled"}, false
 	}
-
-	//	get otp
-	otp, err := s.OTPRepository.FindByUUID(ctx, tx, parsedToken.User_id)
+	//get otp
+	otp, err := s.OTPRepository.FindByUUID(ctx.Context(), tx, parsedToken.User_id)
 	if err != nil {
-		return exception.CustomEror{Code: 404, Error: "Code Otp Was Expired"}, false
+		return exception.CustomEror{Code: 404, Error: "Code Otp Was Not Found"}, false
 	}
 	if otp.Expired_date.Before(now) {
 		return exception.CustomEror{Code: 404, Error: "Code Otp Was Expired"}, false
 	}
-	//	compare otp
+	//compare otp
 	if otp.Otp != o.Otp {
 		return exception.CustomEror{Code: 404, Error: "Code Otp was wrong"}, false
 	}
 
-	//	update user enabled
-	_, err = s.OauthRepo.Update(ctx, tx, domain.Oauth{Is_enabled: true}, parsedToken.User_id)
+	//update user enabled
+	_, err = s.OauthRepo.Update(ctx.Context(), tx, domain.Oauth{Is_enabled: true}, parsedToken.User_id)
 	utils.PanicIfError(err)
 
 	return exception.CustomEror{}, true
@@ -108,7 +109,6 @@ func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, token string) (exception.Cust
 	if err != nil {
 		return exception.CustomEror{Code: 400, Error: err.Error()}, false
 	}
-
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx.Context(), tx)
