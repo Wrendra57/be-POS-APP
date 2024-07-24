@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
+	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
@@ -16,8 +17,8 @@ import (
 
 type OTPService interface {
 	CreateOTP(ctx *fiber.Ctx, uuid uuid.UUID) (domain.OTP, exception.CustomEror, bool)
-	ValidateOtpAccount(ctx *fiber.Ctx, otp string) (exception.CustomEror, bool)
-	ReSendOtp(ctx *fiber.Ctx, userId uuid.UUID) (domain.OTP, exception.CustomEror, bool)
+	ValidateOtpAccount(ctx *fiber.Ctx, otp webrequest.ValidateOtpRequest) (exception.CustomEror, bool)
+	ReSendOtp(ctx *fiber.Ctx, token string) (exception.CustomEror, bool)
 }
 
 type otpServiceImpl struct {
@@ -61,16 +62,20 @@ func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) (domain.OTP, exc
 	return otp, exception.CustomEror{}, true
 }
 
-func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o string) (exception.CustomEror, bool) {
-	user_id, _ := ctx.Locals("user_id").(uuid.UUID)
+func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o webrequest.ValidateOtpRequest) (exception.CustomEror, bool) {
+	parsedToken, err := utils.ParseJWT(o.Token)
+	if err != nil {
+		return exception.CustomEror{Code: 400, Error: err.Error()}, false
+	}
 	now := time.Now()
+
 	// start database tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	//validate user id
-	user, err := s.OauthRepo.FindByUUID(ctx, tx, user_id)
+	user, err := s.OauthRepo.FindByUUID(ctx, tx, parsedToken.User_id)
 	if err != nil {
 		return exception.CustomEror{Code: 404, Error: err.Error()}, false
 	}
@@ -79,7 +84,7 @@ func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o string) (exception
 	}
 
 	//	get otp
-	otp, err := s.OTPRepository.FindByUUID(ctx, tx, user_id)
+	otp, err := s.OTPRepository.FindByUUID(ctx, tx, parsedToken.User_id)
 	if err != nil {
 		return exception.CustomEror{Code: 404, Error: "Code Otp Was Expired"}, false
 	}
@@ -87,48 +92,50 @@ func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o string) (exception
 		return exception.CustomEror{Code: 404, Error: "Code Otp Was Expired"}, false
 	}
 	//	compare otp
-	if otp.Otp != o {
+	if otp.Otp != o.Otp {
 		return exception.CustomEror{Code: 404, Error: "Code Otp was wrong"}, false
 	}
+
 	//	update user enabled
-	fmt.Println("sini")
-	_, err = s.OauthRepo.Update(ctx, tx, domain.Oauth{Is_enabled: true}, user_id)
+	_, err = s.OauthRepo.Update(ctx, tx, domain.Oauth{Is_enabled: true}, parsedToken.User_id)
 	utils.PanicIfError(err)
 
 	return exception.CustomEror{}, true
 }
 
-func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, userId uuid.UUID) (domain.OTP, exception.CustomEror, bool) {
-	//TODO implement me
-	// cek user
+func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, token string) (exception.CustomEror, bool) {
+	parsedToken, err := utils.ParseJWT(token)
+	if err != nil {
+		return exception.CustomEror{Code: 400, Error: err.Error()}, false
+	}
 
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx.Context(), tx)
 
-	oauth, err := s.OauthRepo.FindByUUID(ctx, tx, userId)
+	oauth, err := s.OauthRepo.FindByUUID(ctx, tx, parsedToken.User_id)
 	if err != nil {
 		fmt.Println(err)
-		return domain.OTP{}, exception.CustomEror{Code: 400, Error: "Account not found"}, false
+		return exception.CustomEror{Code: 400, Error: "Account not found"}, false
 	}
 	if oauth.Is_enabled == true {
-		return domain.OTP{}, exception.CustomEror{Code: 400, Error: "Account is already enabled"}, false
+		return exception.CustomEror{Code: 400, Error: "Account is already enabled"}, false
 	}
-	//cek dalam 5 menit resend otp berapa kali
 
-	otps, err := s.OTPRepository.FindAllByUserIdAroundTime(ctx, tx, time.Now().Add(time.Minute*5*-1), time.Now(), userId)
+	//cek dalam 5 menit resend otp berapa kali
+	otps, err := s.OTPRepository.FindAllByUserIdAroundTime(ctx, tx, time.Now().Add(time.Minute*5*-1), time.Now(),
+		parsedToken.User_id)
 	utils.PanicIfError(err)
-	fmt.Println("len otps", len(otps))
-	//fmt.Println(otps)
+
 	if len(otps) >= 5 {
 		msgStr := "Account max resend 5 OTP in 5 minute wait for " + otps[0].Created_at.Add(5*time.Minute).Format("15:04:05 02 Jan 2006")
-		return domain.OTP{}, exception.CustomEror{Code: 400, Error: msgStr}, false
+		return exception.CustomEror{Code: 400, Error: msgStr}, false
 	}
-	fmt.Println("k")
-	otp, errS, e := s.CreateOTP(ctx, userId)
+
+	otp, errS, e := s.CreateOTP(ctx, parsedToken.User_id)
 	if e != true {
 		fmt.Println(e)
-		return domain.OTP{}, errS, false
+		return errS, false
 	}
 
 	//sending email code
@@ -137,6 +144,5 @@ func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, userId uuid.UUID) (domain.OTP
 	//err = utils.SendEmail(oauth.Email, "OTP-ACCOUNT", strOTP)
 	//utils.PanicIfError(err)
 
-	return domain.OTP{}, exception.CustomEror{}, true
-
+	return exception.CustomEror{}, true
 }
