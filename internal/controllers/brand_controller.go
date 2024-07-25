@@ -18,11 +18,12 @@ func CreateBrand(service services.BrandService, validate *validator.Validate) fi
 			fmt.Println(err)
 			return exception.CustomResponse(ctx, 500, "Internal server error", nil)
 		}
-		//	validasi
+		//validasi
 		if err := pkg.ValidateStruct(&request, validate); err != nil {
 			errors := exception.FormatValidationError(err)
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
+
 		b, errs, e := service.CreateBrand(ctx, request)
 		if e == false {
 			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)

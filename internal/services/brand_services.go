@@ -44,7 +44,6 @@ func (s brandServiceImpl) CreateBrand(ctx *fiber.Ctx, r webrequest.BrandCreateRe
 	brand, err = s.BrandRepo.Insert(ctx, tx, brand)
 	if err != nil {
 		return domain.Brand{}, exception.CustomEror{Code: 400, Error: err.Error()}, false
-
 	}
 
 	return brand, exception.CustomEror{}, true
