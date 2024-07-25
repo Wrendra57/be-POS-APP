@@ -37,14 +37,11 @@ func ReSendOtp(service services.OTPService, validate *validator.Validate) fiber.
 	return func(ctx *fiber.Ctx) error {
 
 		token := ctx.Params("token")
-		if token == "" {
-			return exception.CustomResponse(ctx, 400, "token must be required", nil)
-		}
 
 		errs, e := service.ReSendOtp(ctx, token)
 
 		if e == false {
-			return exception.CustomResponse(ctx, errs.Code, errs.Error, token)
+			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
 		}
 		return exception.SuccessResponse(ctx, "success send otp again", nil)
 	}

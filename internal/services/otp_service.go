@@ -107,7 +107,7 @@ func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o webrequest.Validat
 func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, token string) (exception.CustomEror, bool) {
 	parsedToken, err := utils.ParseJWT(token)
 	if err != nil {
-		return exception.CustomEror{Code: 400, Error: err.Error()}, false
+		return exception.CustomEror{Code: fiber.StatusUnauthorized, Error: "Unauthorized"}, false
 	}
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
@@ -116,10 +116,10 @@ func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, token string) (exception.Cust
 	oauth, err := s.OauthRepo.FindByUUID(ctx, tx, parsedToken.User_id)
 	if err != nil {
 		fmt.Println(err)
-		return exception.CustomEror{Code: 400, Error: "Account not found"}, false
+		return exception.CustomEror{Code: fiber.StatusNotFound, Error: "Account not found"}, false
 	}
 	if oauth.Is_enabled == true {
-		return exception.CustomEror{Code: 400, Error: "Account is already enabled"}, false
+		return exception.CustomEror{Code: fiber.StatusBadRequest, Error: "Account is already enabled"}, false
 	}
 
 	//cek dalam 5 menit resend otp berapa kali
@@ -129,7 +129,7 @@ func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, token string) (exception.Cust
 
 	if len(otps) >= 5 {
 		msgStr := "Account max resend 5 OTP in 5 minute wait for " + otps[0].Created_at.Add(5*time.Minute).Format("15:04:05 02 Jan 2006")
-		return exception.CustomEror{Code: 400, Error: msgStr}, false
+		return exception.CustomEror{Code: fiber.StatusBadRequest, Error: msgStr}, false
 	}
 
 	otp, errS, e := s.CreateOTP(ctx, parsedToken.User_id)

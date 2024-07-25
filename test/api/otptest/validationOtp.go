@@ -74,3 +74,14 @@ func UpdateOtpExpired(db *pgxpool.Pool, userId uuid.UUID) error {
 
 	return nil
 }
+func InsertOtpTest(db *pgxpool.Pool, otp domain.OTP) error {
+	otpRepo := repositories.NewOtpRepository()
+
+	tx, err := db.BeginTx(context.Background(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(context.Background(), tx)
+
+	_, err = otpRepo.Insert(context.Background(), tx, otp)
+	utils.PanicIfError(err)
+	return nil
+}
