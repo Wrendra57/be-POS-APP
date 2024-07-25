@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
@@ -46,7 +47,7 @@ func (s categoryServiceImpl) CreateCategory(ctx *fiber.Ctx, r webrequest.Categor
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	category, err = s.CategoryRepo.Insert(ctx, tx, category)
+	category, err = s.CategoryRepo.Insert(ctx.Context(), tx, category)
 	if err != nil {
 		return domain.Category{}, exception.CustomEror{Code: 500, Error: "Invalid Server Error"}, false
 	}
@@ -66,7 +67,7 @@ func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.C
 	}
 
 	categories := s.CategoryRepo.FindByParams(ctx, tx, c)
-
+	fmt.Println("asd")
 	if len(categories) == 0 {
 		categories = []domain.Category{}
 	}

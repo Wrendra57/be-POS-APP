@@ -8,10 +8,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"golang.org/x/net/context"
 )
 
 type CategoriesRespository interface {
-	Insert(ctx *fiber.Ctx, tx pgx.Tx, c domain.Category) (domain.Category, error)
+	Insert(ctx context.Context, tx pgx.Tx, c domain.Category) (domain.Category, error)
 	FindByParams(ctx *fiber.Ctx, tx pgx.Tx, s webrequest.CategoryFindByParam) []domain.Category
 }
 
@@ -22,11 +23,11 @@ func NewCategoriesRepository() CategoriesRespository {
 	return &categoriesRespositoryImpl{}
 }
 
-func (r categoriesRespositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, c domain.Category) (domain.Category, error) {
+func (r categoriesRespositoryImpl) Insert(ctx context.Context, tx pgx.Tx, c domain.Category) (domain.Category, error) {
 	SQL := "INSERT INTO categories(name, description) VALUES ($1, $2) RETURNING id"
 
 	var id uuid.UUID
-	row := tx.QueryRow(ctx.Context(), SQL, c.Name, c.Description)
+	row := tx.QueryRow(ctx, SQL, c.Name, c.Description)
 
 	err := row.Scan(&id)
 	if err != nil {
@@ -55,7 +56,7 @@ func (r categoriesRespositoryImpl) FindByParams(ctx *fiber.Ctx, tx pgx.Tx,
 
 	for rows.Next() {
 		var c domain.Category
-		err := rows.Scan(&c.Id, &c.Name, &c.Description, &c.CreatedAt)
+		err := rows.Scan(&c.Id, &c.Name, &c.Description, &c.CreatedAt, &c.UpdatedAt, &c.DeletedAt)
 		utils.PanicIfError(err)
 		categories = append(categories, c)
 	}

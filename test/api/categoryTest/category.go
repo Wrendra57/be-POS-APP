@@ -1,4 +1,4 @@
-package brandTest
+package categoryTests
 
 import (
 	"context"
@@ -9,14 +9,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func InsertBrandTest(db *pgxpool.Pool, brand domain.Brand) domain.Brand {
-	brandRepo := repositories.NewBrandRepository()
+func InsertCategoriesTest(db *pgxpool.Pool, category domain.Category) domain.Category {
+	categoryRepo := repositories.NewCategoriesRepository()
 
 	tx, err := db.BeginTx(context.Background(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(context.Background(), tx)
 
-	brand, err = brandRepo.Insert(context.Background(), tx, brand)
+	category, err = categoryRepo.Insert(context.Background(), tx, category)
 	utils.PanicIfError(err)
-	return brand
+	return category
 }
