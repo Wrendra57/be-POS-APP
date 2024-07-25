@@ -27,7 +27,7 @@ func CreateCategory(service services.CategoryService, validate *validator.Valida
 		if e == false {
 			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
 		}
-		return exception.SuccessResponse(ctx, "success", c)
+		return exception.SuccessResponse(ctx, "Success create category", c)
 	}
 
 }
