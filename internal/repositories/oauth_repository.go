@@ -119,7 +119,7 @@ func (r *oauthRepositoryImpl) Update(ctx context.Context, tx pgx.Tx, o domain.Oa
 	}
 	index++
 	SQL += fmt.Sprintf("is_enabled = $%d, ", index)
-	args = append(args, true)
+	args = append(args, o.Is_enabled)
 
 	index++
 	SQL += fmt.Sprintf("updated_at = $%d, ", index)

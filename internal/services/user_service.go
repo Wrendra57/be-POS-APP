@@ -142,6 +142,7 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginRequest) (webrespones.TokenResp, exception.CustomEror,
 	bool) {
 	// begin database tx
+
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx.Context(), tx)
@@ -149,7 +150,7 @@ func (s userServiceImpl) Login(ctx *fiber.Ctx, request webrequest.UserLoginReque
 	//get data from db
 	o, err := s.OauthRepository.FindByUsernameOrEmail(ctx, tx, request.UserName)
 	if err != nil {
-		return webrespones.TokenResp{}, exception.CustomEror{Code: fiber.StatusBadRequest,
+		return webrespones.TokenResp{}, exception.CustomEror{Code: fiber.StatusNotFound,
 			Error: "Account / Password was wrong"}, false
 	}
 	if !o.Is_enabled {

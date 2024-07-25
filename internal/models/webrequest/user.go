@@ -17,6 +17,6 @@ type UserCreateRequest struct {
 }
 
 type UserLoginRequest struct {
-	UserName string `json:"username" validate:"omitempty,min=3,max=32"`
+	UserName string `json:"username" validate:"required,min=3,max=32"`
 	Password string `json:"password" validate:"required,min=8,max=32"`
 }
