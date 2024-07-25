@@ -39,10 +39,11 @@ func (r categoriesRespositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, c domain.Ca
 func (r categoriesRespositoryImpl) FindByParams(ctx *fiber.Ctx, tx pgx.Tx,
 	request webrequest.CategoryFindByParam) []domain.Category {
 
-	SQL := `SELECT id, name, description, created_at
+	SQL := `SELECT id, name, description, created_at, updated_at, deleted_at
 			FROM categories
-			WHERE (name ILIKE $1
-			   OR description ILIKE $2) AND deleted_at IS NULL
+			WHERE (name ILIKE $1 OR description ILIKE $2)
+			  AND deleted_at IS NULL
+			ORDER BY name ASC
 			LIMIT $3 OFFSET $4`
 
 	searchParams := "%" + request.Params + "%"

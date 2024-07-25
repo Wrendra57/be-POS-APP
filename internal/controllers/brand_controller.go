@@ -60,7 +60,6 @@ func ListBrand(service services.BrandService, validate *validator.Validate) fibe
 			request.Offset = 1
 		}
 
-		//	validasi
 		b, errs, e := service.ListBrand(ctx, request)
 		if e == false {
 			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)

@@ -64,7 +64,12 @@ func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.C
 		Limit:  r.Limit,
 		Offset: (r.Offset - 1) * r.Limit,
 	}
+
 	categories := s.CategoryRepo.FindByParams(ctx, tx, c)
+
+	if len(categories) == 0 {
+		categories = []domain.Category{}
+	}
 
 	return categories, exception.CustomEror{}, true
 }
