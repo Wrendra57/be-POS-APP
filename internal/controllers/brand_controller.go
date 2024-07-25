@@ -61,17 +61,11 @@ func ListBrand(service services.BrandService, validate *validator.Validate) fibe
 		}
 
 		//	validasi
-		if err := pkg.ValidateStruct(&request, validate); err != nil {
-			errors := exception.FormatValidationError(err)
-			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
-
-		}
-
 		b, errs, e := service.ListBrand(ctx, request)
 		if e == false {
 			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
 		}
 
-		return exception.SuccessResponse(ctx, "success", b)
+		return exception.SuccessResponse(ctx, "Success get data brand", b)
 	}
 }

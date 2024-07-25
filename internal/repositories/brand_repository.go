@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"context"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
@@ -9,7 +10,7 @@ import (
 )
 
 type BrandRepository interface {
-	Insert(ctx *fiber.Ctx, tx pgx.Tx, c domain.Brand) (domain.Brand, error)
+	Insert(ctx context.Context, tx pgx.Tx, c domain.Brand) (domain.Brand, error)
 	ListAll(ctx *fiber.Ctx, tx pgx.Tx, request webrequest.BrandGetRequest) []domain.Brand
 }
 
@@ -20,12 +21,12 @@ func NewBrandRepository() BrandRepository {
 	return &brandRepositoryImpl{}
 }
 
-func (r brandRepositoryImpl) Insert(ctx *fiber.Ctx, tx pgx.Tx, brand domain.Brand) (domain.Brand, error) {
+func (r brandRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, brand domain.Brand) (domain.Brand, error) {
 	//TODO implement me
 	SQL := "INSERT INTO brands(name, description) VALUES ($1, $2) RETURNING id"
 
 	var id int
-	row := tx.QueryRow(ctx.Context(), SQL, brand.Name, brand.Description)
+	row := tx.QueryRow(ctx, SQL, brand.Name, brand.Description)
 
 	err := row.Scan(&id)
 	if err != nil {

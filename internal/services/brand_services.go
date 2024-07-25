@@ -41,7 +41,7 @@ func (s brandServiceImpl) CreateBrand(ctx *fiber.Ctx, r webrequest.BrandCreateRe
 		Name:        r.Name,
 		Description: r.Description,
 	}
-	brand, err = s.BrandRepo.Insert(ctx, tx, brand)
+	brand, err = s.BrandRepo.Insert(ctx.Context(), tx, brand)
 	if err != nil {
 		return domain.Brand{}, exception.CustomEror{Code: 400, Error: err.Error()}, false
 	}
@@ -61,6 +61,9 @@ func (s brandServiceImpl) ListBrand(ctx *fiber.Ctx, r webrequest.BrandGetRequest
 	}
 
 	brands := s.BrandRepo.ListAll(ctx, tx, brandReq)
+	if len(brands) == 0 {
+		brands = []domain.Brand{}
+	}
 
 	return brands, exception.CustomEror{}, true
 }
