@@ -38,14 +38,19 @@ func ParseJWT(tokenString string) (*Claimed, error) {
 		return []byte(secret), nil
 	})
 	if err != nil {
+		fmt.Println(err.Error())
+
 		return &Claimed{}, err
 	}
 	if !token.Valid {
+		fmt.Println("invalid token")
 		return &Claimed{}, fmt.Errorf("invalid token")
 	}
 
 	claims, ok := token.Claims.(*Claimed)
 	if !ok {
+		fmt.Println("invalisd token")
+
 		return &Claimed{}, fmt.Errorf("failed to parse claims")
 	}
 

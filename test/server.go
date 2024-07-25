@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 )
 
@@ -29,6 +30,15 @@ func SetupDBtest() (*pgxpool.Pool, func(), error) {
 	}
 
 	return db, cleanup, nil
+}
+
+func SetupRedisTest() *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	return rdb
 }
 
 func TruncateDB(db *pgxpool.Pool) error {

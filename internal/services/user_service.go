@@ -199,7 +199,7 @@ func (s userServiceImpl) AuthMe(ctx *fiber.Ctx) (domain.UserDetail, exception.Cu
 	//get data from db
 	user, err = s.UserRepository.FindUserDetail(ctx, tx, userId)
 	if err != nil {
-		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "user not found"}, false
+		return user, exception.CustomEror{Code: fiber.StatusNotFound, Error: "User not found"}, false
 	}
 
 	//convert to json
