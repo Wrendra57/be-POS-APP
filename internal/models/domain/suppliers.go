@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"database/sql"
 	"github.com/google/uuid"
 	"time"
 )
@@ -12,5 +13,5 @@ type Supplier struct {
 	Address     string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DeletedAt   time.Time
+	DeletedAt   sql.NullTime
 }

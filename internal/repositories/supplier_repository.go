@@ -36,9 +36,9 @@ func (s supplierRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, supplier 
 }
 func (s supplierRepositoryImpl) ListAll(ctx context.Context, tx pgx.Tx, request webrequest.SupplierListRequest) []domain.Supplier {
 
-	SQL := `SELECT id, name, contact_info, address, created_at, updated_at
+	SQL := `SELECT id, name, contact_info, address, created_at, updated_at, deleted_at
 			FROM suppliers
-			where (name ILIKE $1 OR contact_info ILIKE $2 or address ILIKE $3)
+			WHERE (name ILIKE $1 OR contact_info ILIKE $2 OR address ILIKE $3)
 			  AND deleted_at IS NULL
 			ORDER BY name ASC
 			LIMIT $4 OFFSET $5`
@@ -50,10 +50,9 @@ func (s supplierRepositoryImpl) ListAll(ctx context.Context, tx pgx.Tx, request 
 	var suppliers []domain.Supplier
 	for rows.Next() {
 		var sup domain.Supplier
-		err := rows.Scan(&sup.Id, &sup.Name, &sup.ContactInfo, &sup.Address, &sup.CreatedAt, &sup.UpdatedAt)
+		err := rows.Scan(&sup.Id, &sup.Name, &sup.ContactInfo, &sup.Address, &sup.CreatedAt, &sup.UpdatedAt, &sup.DeletedAt)
 		utils.PanicIfError(err)
 		suppliers = append(suppliers, sup)
 	}
 	return suppliers
-	panic("implement me")
 }

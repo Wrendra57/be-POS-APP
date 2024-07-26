@@ -1,4 +1,4 @@
-package brandTest
+package suplier
 
 import (
 	"encoding/json"
@@ -15,14 +15,14 @@ import (
 	"testing"
 )
 
-type ResponeListTest struct {
-	Code    int            `json:"code"`
-	Status  string         `json:"status"`
-	Data    []domain.Brand `json:"data"`
-	Message string         `json:"message"`
+type responeListTest struct {
+	Code    int               `json:"code"`
+	Status  string            `json:"status"`
+	Data    []domain.Supplier `json:"data"`
+	Message string            `json:"message"`
 }
 
-func GetListBrand(t *testing.T, url, body string) *http.Request {
+func GetListSupplier(t *testing.T, url, body string) *http.Request {
 	req, err := http.NewRequest("GET", url, strings.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
@@ -30,6 +30,7 @@ func GetListBrand(t *testing.T, url, body string) *http.Request {
 	req.Header.Set("Content-Type", "application/json")
 	return req
 }
+
 func TestGetListBrandSuccess(t *testing.T) {
 	test.InitConfigTest()
 
@@ -42,10 +43,10 @@ func TestGetListBrandSuccess(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{Name: "test", Description: "test brand"}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
 
 	for i := 0; i < 5; i++ {
-		_ = InsertBrandTest(db, brand)
+		_ = InsertSupplierTest(db, supplier)
 	}
 	db.Close()
 
@@ -57,8 +58,8 @@ func TestGetListBrandSuccess(t *testing.T) {
 
 	limit := "limit=10"
 	offset := "offset=1"
-	url := "/api/v1/brands?" + limit + "&" + offset
-	request := GetListBrand(t, url, "")
+	url := "/api/v1/supplier?" + limit + "&" + offset
+	request := GetListSupplier(t, url, "")
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -66,18 +67,18 @@ func TestGetListBrandSuccess(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, res.StatusCode)
 
-	var response ResponeListTest
+	var response responeListTest
 	err = json.Unmarshal(body, &response)
 
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 	assert.Equalf(t, "success", response.Status, "response status should be ok")
-	assert.Equalf(t, "Success get data brand", response.Message, "response message should be equal")
+	assert.Equalf(t, "Success get data supplier", response.Message, "response message should be equal")
 	assert.NotEmpty(t, response.Data)
 }
 
-func TestGetListBrandWitParamsSuccess(t *testing.T) {
+func TestGetListSupplierWitParamsSuccess(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -89,11 +90,11 @@ func TestGetListBrandWitParamsSuccess(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{Name: "test", Description: "test brand"}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
 
 	for i := 0; i < 5; i++ {
-		name := brand.Name + strconv.Itoa(i)
-		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
 	}
 	db.Close()
 
@@ -105,8 +106,8 @@ func TestGetListBrandWitParamsSuccess(t *testing.T) {
 	param := "params=1"
 	limit := "limit=10"
 	offset := "offset=1"
-	url := "/api/v1/brands?" + limit + "&" + offset + "&" + param
-	request := GetListBrand(t, url, "")
+	url := "/api/v1/supplier?" + limit + "&" + offset + "&" + param
+	request := GetListSupplier(t, url, "")
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -114,19 +115,19 @@ func TestGetListBrandWitParamsSuccess(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, res.StatusCode)
 
-	var response ResponeListTest
+	var response responeListTest
 	err = json.Unmarshal(body, &response)
 
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 	assert.Equalf(t, "success", response.Status, "response status should be ok")
-	assert.Equalf(t, "Success get data brand", response.Message, "response message should be equal")
+	assert.Equalf(t, "Success get data supplier", response.Message, "response message should be equal")
 	assert.NotEmpty(t, response.Data)
 	assert.Lenf(t, response.Data, 1, "should have one brand")
 }
 
-func TestGetListBrandWitParamsSuccessNoResult(t *testing.T) {
+func TestGetListSupplierWitParamsSuccessNoResult(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -138,11 +139,11 @@ func TestGetListBrandWitParamsSuccessNoResult(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{Name: "test", Description: "test brand"}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
 
 	for i := 0; i < 5; i++ {
-		name := brand.Name + strconv.Itoa(i)
-		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
 	}
 	db.Close()
 
@@ -154,8 +155,8 @@ func TestGetListBrandWitParamsSuccessNoResult(t *testing.T) {
 	param := "params=1dwfw"
 	limit := "limit=10"
 	offset := "offset=1"
-	url := "/api/v1/brands?" + limit + "&" + offset + "&" + param
-	request := GetListBrand(t, url, "")
+	url := "/api/v1/supplier?" + limit + "&" + offset + "&" + param
+	request := GetListSupplier(t, url, "")
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -163,19 +164,19 @@ func TestGetListBrandWitParamsSuccessNoResult(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, res.StatusCode)
 
-	var response ResponeListTest
+	var response responeListTest
 	err = json.Unmarshal(body, &response)
 
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 	assert.Equalf(t, "success", response.Status, "response status should be ok")
-	assert.Equalf(t, "Success get data brand", response.Message, "response message should be equal")
+	assert.Equalf(t, "Success get data supplier", response.Message, "response message should be equal")
 	assert.Empty(t, response.Data)
 	assert.Lenf(t, response.Data, 0, "should have one brand")
 }
 
-func TestGetListBrandWithoutLimit(t *testing.T) {
+func TestGetListSupplierWithoutLimit(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -187,11 +188,11 @@ func TestGetListBrandWithoutLimit(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{Name: "test", Description: "test brand"}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
 
 	for i := 0; i < 5; i++ {
-		name := brand.Name + strconv.Itoa(i)
-		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
 	}
 	db.Close()
 
@@ -202,8 +203,8 @@ func TestGetListBrandWithoutLimit(t *testing.T) {
 	defer clean()
 
 	offset := "offset=1"
-	url := "/api/v1/brands?" + offset
-	request := GetListBrand(t, url, "")
+	url := "/api/v1/supplier?" + offset
+	request := GetListSupplier(t, url, "")
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -211,18 +212,19 @@ func TestGetListBrandWithoutLimit(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, res.StatusCode)
 
-	var response ResponeListTest
+	var response responeListTest
 	err = json.Unmarshal(body, &response)
 
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 	assert.Equalf(t, "success", response.Status, "response status should be ok")
-	assert.Equalf(t, "Success get data brand", response.Message, "response message should be equal")
+	assert.Equalf(t, "Success get data supplier", response.Message, "response message should be equal")
 	assert.NotEmpty(t, response.Data)
 	assert.Lenf(t, response.Data, 5, "should have one brand")
 }
-func TestGetListBrandWithoutOffset(t *testing.T) {
+
+func TestGetListSupplierWithoutOffset(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -234,11 +236,11 @@ func TestGetListBrandWithoutOffset(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{Name: "test", Description: "test brand"}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
 
 	for i := 0; i < 5; i++ {
-		name := brand.Name + strconv.Itoa(i)
-		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
 	}
 	db.Close()
 
@@ -248,8 +250,8 @@ func TestGetListBrandWithoutOffset(t *testing.T) {
 	}
 	defer clean()
 
-	url := "/api/v1/brands?"
-	request := GetListBrand(t, url, "")
+	url := "/api/v1/supplier?"
+	request := GetListSupplier(t, url, "")
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -257,19 +259,19 @@ func TestGetListBrandWithoutOffset(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusOK, res.StatusCode)
 
-	var response ResponeListTest
+	var response responeListTest
 	err = json.Unmarshal(body, &response)
 
 	if err != nil {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 	assert.Equalf(t, "success", response.Status, "response status should be ok")
-	assert.Equalf(t, "Success get data brand", response.Message, "response message should be equal")
+	assert.Equalf(t, "Success get data supplier", response.Message, "response message should be equal")
 	assert.NotEmpty(t, response.Data)
 	assert.Lenf(t, response.Data, 5, "should have one brand")
 }
 
-func TestGetListBrandFailedLimit(t *testing.T) {
+func TestGetListSupplierFailedLimit(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -281,11 +283,11 @@ func TestGetListBrandFailedLimit(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{Name: "test", Description: "test brand"}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
 
 	for i := 0; i < 5; i++ {
-		name := brand.Name + strconv.Itoa(i)
-		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
 	}
 	db.Close()
 
@@ -295,8 +297,8 @@ func TestGetListBrandFailedLimit(t *testing.T) {
 	}
 	defer clean()
 	limit := "limit=w2"
-	url := "/api/v1/brands?" + limit
-	request := GetListBrand(t, url, "")
+	url := "/api/v1/supplier?" + limit
+	request := GetListSupplier(t, url, "")
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -304,7 +306,7 @@ func TestGetListBrandFailedLimit(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
 
-	var response ResponeListTest
+	var response responeListTest
 	err = json.Unmarshal(body, &response)
 
 	if err != nil {
@@ -314,7 +316,8 @@ func TestGetListBrandFailedLimit(t *testing.T) {
 	assert.Equalf(t, "The 'limit' field must be number/integer", response.Message, "response message should be equal")
 	assert.Empty(t, response.Data)
 }
-func TestGetListBrandFailedOffset(t *testing.T) {
+
+func TestGetListSupplierFailedOffset(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -326,11 +329,11 @@ func TestGetListBrandFailedOffset(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{Name: "test", Description: "test brand"}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
 
 	for i := 0; i < 5; i++ {
-		name := brand.Name + strconv.Itoa(i)
-		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
 	}
 	db.Close()
 
@@ -340,8 +343,8 @@ func TestGetListBrandFailedOffset(t *testing.T) {
 	}
 	defer clean()
 	offset := "offset=w2"
-	url := "/api/v1/brands?" + offset
-	request := GetListBrand(t, url, "")
+	url := "/api/v1/supplier?" + offset
+	request := GetListSupplier(t, url, "")
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -349,7 +352,7 @@ func TestGetListBrandFailedOffset(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
 
-	var response ResponeListTest
+	var response responeListTest
 	err = json.Unmarshal(body, &response)
 
 	if err != nil {
