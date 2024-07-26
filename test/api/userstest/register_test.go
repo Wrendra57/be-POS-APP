@@ -907,3 +907,88 @@ func TestRegisterUserUsernameExist(t *testing.T) {
 	assert.Equalf(t, response.Message, "Username already exists", "response message should be equal")
 	assert.Nil(t, response.Data)
 }
+
+func RegisterCreateUserBenchmarkRequest(b *testing.B, app *fiber.App, method, url, body string) *http.Request {
+	req, err := http.NewRequest(method, url, strings.NewReader(body))
+	if err != nil {
+		b.Fatal(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	return req
+}
+
+func BenchmarkRegisterUser(b *testing.B) {
+	test.InitConfigTest()
+
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+
+	req := webrequest.UserCreateRequest{
+		Name:     "testUser",
+		Gender:   "male",
+		Telp:     "08213243444",
+		Birthday: "2023-07-15",
+		Address:  "solo",
+		Email:    "testUser@gmail.com",
+		Password: "password",
+		Username: "testerrr",
+	}
+	registerData := map[string]string{
+		"name":     req.Name,
+		"gender":   req.Gender,
+		"telp":     req.Telp,
+		"birthday": req.Birthday,
+		"address":  req.Address,
+		"email":    req.Email,
+		"password": req.Password,
+		"username": req.Username,
+	}
+
+	jsonData, err := json.Marshal(registerData)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		requ := RegisterCreateUserBenchmarkRequest(b, app, "POST", "/api/v1/users/register", string(jsonData))
+		res, err := app.Test(requ, 3000)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		body, err := ioutil.ReadAll(res.Body)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if res.StatusCode != fiber.StatusOK {
+			b.Fatalf("Expected status code %d, got %d", fiber.StatusOK, res.StatusCode)
+		}
+
+		var response webrespones.ResponseApi
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			log.Fatalf("Error unmarshalling JSON: %v", err)
+		}
+		if response.Status != "ok" {
+			b.Fatalf("Expected response status 'ok', got '%s'", response.Status)
+		}
+		if response.Message != "User created successfully" {
+			b.Fatalf("Expected response message 'User created successfully', got '%s'", response.Message)
+		}
+	}
+}

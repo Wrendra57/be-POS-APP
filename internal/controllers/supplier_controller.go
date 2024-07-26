@@ -26,7 +26,7 @@ func CreateSupplier(service services.SupplierService, validate *validator.Valida
 		if e == false {
 			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
 		}
-		return exception.SuccessResponse(ctx, "success", s)
+		return exception.SuccessResponse(ctx, "Success create supplier", s)
 	}
 }
 

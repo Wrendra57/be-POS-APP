@@ -1,4 +1,4 @@
-package brandTest
+package suplier_test
 
 import (
 	"encoding/json"
@@ -19,8 +19,8 @@ import (
 	"testing"
 )
 
-func CreateBrandTestRequest(t *testing.T, body, token string) *http.Request {
-	req, err := http.NewRequest("POST", "/api/v1/brands", strings.NewReader(body))
+func CreateSupplierTestRequest(t *testing.T, body, token string) *http.Request {
+	req, err := http.NewRequest("POST", "/api/v1/supplier", strings.NewReader(body))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func CreateBrandTestRequest(t *testing.T, body, token string) *http.Request {
 	return req
 }
 
-func TestBrandCreateSuccess(t *testing.T) {
+func TestSupplierCreateSuccess(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -54,17 +54,21 @@ func TestBrandCreateSuccess(t *testing.T) {
 	user, _, role, _, _, _ := userstest.InsertNewUserTest(t, db, req)
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
+
 	generateToken, err := utils.GenerateJWT(user.User_id, role.Role)
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{
-		Name:        "testBrand",
-		Description: "test brand description",
+
+	supplier := domain.Supplier{
+		Name:        "testSupplier",
+		ContactInfo: "0821324532",
+		Address:     "test address",
 	}
 	bodyReq := map[string]string{
-		"name":        brand.Name,
-		"description": brand.Description,
+		"name":         supplier.Name,
+		"contact_info": supplier.ContactInfo,
+		"address":      supplier.Address,
 	}
 	jsonReq, _ := json.Marshal(bodyReq)
 
@@ -74,7 +78,7 @@ func TestBrandCreateSuccess(t *testing.T) {
 	}
 	defer clean()
 
-	request := CreateBrandTestRequest(t, string(jsonReq), generateToken)
+	request := CreateSupplierTestRequest(t, string(jsonReq), generateToken)
 	res, err := app.Test(request, 3000)
 	assert.Nil(t, err)
 
@@ -89,11 +93,10 @@ func TestBrandCreateSuccess(t *testing.T) {
 		log.Fatalf("Error unmarshalling JSON: %v", err)
 	}
 	assert.Equalf(t, "success", response.Status, "response status should be ok")
-	assert.Equalf(t, "success", response.Message, "response message should be equal")
+	assert.Equalf(t, "Success create supplier", response.Message, "response message should be equal")
 	assert.NotEmpty(t, response.Data)
 }
-
-func TestBrandCreateValidationFailed(t *testing.T) {
+func TestSupplierCreateValidationFailed(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -123,9 +126,10 @@ func TestBrandCreateValidationFailed(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	brand := domain.Brand{
-		Name:        "testBrand",
-		Description: "test brand description",
+	supplier := domain.Supplier{
+		Name:        "testSupplier",
+		ContactInfo: "0821324532",
+		Address:     "test address",
 	}
 
 	tests := []struct {
@@ -138,16 +142,18 @@ func TestBrandCreateValidationFailed(t *testing.T) {
 		{
 			nameTest: "Failed validation required 'name' field not exist",
 			body: map[string]string{
-				"description": brand.Description,
+				"contact_info": supplier.ContactInfo,
+				"address":      supplier.Address,
 			},
 			expectedCode:    fiber.StatusBadRequest,
 			expectedStatus:  "failed",
 			expectedMessage: "Name is required",
 		}, {
-			nameTest: "Failed validation required 'name' field empty string",
+			nameTest: "Failed validation required 'name' field empty",
 			body: map[string]string{
-				"name":        "",
-				"description": brand.Description,
+				"name":         "",
+				"contact_info": supplier.ContactInfo,
+				"address":      supplier.Address,
 			},
 			expectedCode:    fiber.StatusBadRequest,
 			expectedStatus:  "failed",
@@ -155,38 +161,101 @@ func TestBrandCreateValidationFailed(t *testing.T) {
 		}, {
 			nameTest: "Failed validation Min Length 'name' field",
 			body: map[string]string{
-				"name":        "wd",
-				"description": brand.Description,
+				"name":         "sd",
+				"contact_info": supplier.ContactInfo,
+				"address":      supplier.Address,
 			},
 			expectedCode:    fiber.StatusBadRequest,
 			expectedStatus:  "failed",
 			expectedMessage: "Name must be at least 3 characters long",
 		}, {
-			nameTest: "Failed validation required 'description' field not exist",
+			nameTest: "Failed validation Max Length 'name' field",
 			body: map[string]string{
-				"name": brand.Name,
+				"name":         "sdwdwdwdwdsdwdwdwdwdsdwdwdwdwddwdw",
+				"contact_info": supplier.ContactInfo,
+				"address":      supplier.Address,
 			},
 			expectedCode:    fiber.StatusBadRequest,
 			expectedStatus:  "failed",
-			expectedMessage: "Description is required",
+			expectedMessage: "Name must be maximum 32 characters long",
 		}, {
-			nameTest: "Failed validation required 'description' field empty string",
+			nameTest: "Failed validation required 'contact_info' field not exist",
 			body: map[string]string{
-				"name":        brand.Name,
-				"description": "",
+				"name":    supplier.Name,
+				"address": supplier.Address,
 			},
 			expectedCode:    fiber.StatusBadRequest,
 			expectedStatus:  "failed",
-			expectedMessage: "Description is required",
+			expectedMessage: "ContactInfo is required",
 		}, {
-			nameTest: "Failed validation Min Length 'description' field",
+			nameTest: "Failed validation required 'contact_info' field empty",
 			body: map[string]string{
-				"name":        brand.Name,
-				"description": "sd",
+				"name":         supplier.Name,
+				"contact_info": "",
+				"address":      supplier.Address,
 			},
 			expectedCode:    fiber.StatusBadRequest,
 			expectedStatus:  "failed",
-			expectedMessage: "Description must be at least 3 characters long",
+			expectedMessage: "ContactInfo is required",
+		}, {
+			nameTest: "Failed validation Min Length 'contact_info' field",
+			body: map[string]string{
+				"name":         supplier.Name,
+				"contact_info": "dw",
+				"address":      supplier.Address,
+			},
+			expectedCode:    fiber.StatusBadRequest,
+			expectedStatus:  "failed",
+			expectedMessage: "ContactInfo must be at least 3 characters long",
+		}, {
+			nameTest: "Failed validation Max Length 'contact_info' field",
+			body: map[string]string{
+				"name":         supplier.Name,
+				"contact_info": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi volutpat neque tortor, quis tristique dolor fermentum sit amet. Vivamus augue justo, ultricies sit amet elit nec, fermentum mollis metus. Sed imperdiet orci eget dui consectetur lobortis. Duis tempor urna eget porta ultrices. Vivamus semper accumsan commodo. Nunc quis nibh eu mi rutrum alique",
+				"address":      supplier.Address,
+			},
+			expectedCode:    fiber.StatusBadRequest,
+			expectedStatus:  "failed",
+			expectedMessage: "ContactInfo must be maximum 32 characters long",
+		}, {
+			nameTest: "Failed validation required 'address' field not exist",
+			body: map[string]string{
+				"name":         supplier.Name,
+				"contact_info": supplier.ContactInfo,
+			},
+			expectedCode:    fiber.StatusBadRequest,
+			expectedStatus:  "failed",
+			expectedMessage: "Address is required",
+		}, {
+			nameTest: "Failed validation required 'address' field empty",
+			body: map[string]string{
+				"name":         supplier.Name,
+				"contact_info": supplier.ContactInfo,
+				"address":      "",
+			},
+			expectedCode:    fiber.StatusBadRequest,
+			expectedStatus:  "failed",
+			expectedMessage: "Address is required",
+		}, {
+			nameTest: "Failed validation Min Length 'Address' field",
+			body: map[string]string{
+				"name":         supplier.Name,
+				"contact_info": supplier.ContactInfo,
+				"address":      "dw",
+			},
+			expectedCode:    fiber.StatusBadRequest,
+			expectedStatus:  "failed",
+			expectedMessage: "Address must be at least 3 characters long",
+		}, {
+			nameTest: "Failed validation Max Length 'Address' field",
+			body: map[string]string{
+				"name":         supplier.Name,
+				"contact_info": supplier.ContactInfo,
+				"address":      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi volutpat neque tortor, quis tristique dolor fermentum sit amet. Vivamus augue justo, ultricies sit amet elit nec, fermentum mollis metus. Sed imperdiet orci eget dui consectetur lobortis. Duis tempor urna eget porta ultrices. Vivamus semper accumsan commodo. Nunc quis nibh eu mi rutrum alique",
+			},
+			expectedCode:    fiber.StatusBadRequest,
+			expectedStatus:  "failed",
+			expectedMessage: "Address must be maximum 232 characters long",
 		},
 	}
 	for _, test := range tests {
@@ -199,7 +268,7 @@ func TestBrandCreateValidationFailed(t *testing.T) {
 			}
 			defer clean()
 
-			request := CreateBrandTestRequest(t, string(jsonReq), generateToken)
+			request := CreateSupplierTestRequest(t, string(jsonReq), generateToken)
 			res, err := app.Test(request, 3000)
 			assert.Nil(t, err)
 
@@ -221,7 +290,7 @@ func TestBrandCreateValidationFailed(t *testing.T) {
 
 }
 
-func TestBrandCreateWithoutToken(t *testing.T) {
+func TestSupplierCreateWithoutToken(t *testing.T) {
 	test.InitConfigTest()
 
 	db, _, err := test.SetupDBtest()
@@ -247,13 +316,15 @@ func TestBrandCreateWithoutToken(t *testing.T) {
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
 
-	brand := domain.Brand{
-		Name:        "testBrand",
-		Description: "test brand description",
+	supplier := domain.Supplier{
+		Name:        "testSupplier",
+		ContactInfo: "0821324532",
+		Address:     "test address",
 	}
 	bodyReq := map[string]string{
-		"name":        brand.Name,
-		"description": brand.Description,
+		"name":         supplier.Name,
+		"contact_info": supplier.ContactInfo,
+		"address":      supplier.Address,
 	}
 	jsonReq, _ := json.Marshal(bodyReq)
 
@@ -263,7 +334,7 @@ func TestBrandCreateWithoutToken(t *testing.T) {
 	}
 	defer clean()
 
-	request, err := http.NewRequest("POST", "/api/v1/brands", strings.NewReader(string(jsonReq)))
+	request, err := http.NewRequest("POST", "/api/v1/supplier", strings.NewReader(string(jsonReq)))
 	request.Header.Set("Content-Type", "application/json")
 
 	res, err := app.Test(request, 3000)
