@@ -63,7 +63,7 @@ func (s photosServiceImpl) UploadPhotoService(ctx *fiber.Ctx, request webrequest
 	// Buat direktori uploads jika belum ada
 	uploadsDir := "./storage/photos"
 	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
-		err := os.Mkdir(uploadsDir, os.ModePerm)
+		err := os.MkdirAll(uploadsDir, os.ModePerm)
 		if err != nil {
 			return domain.Photos{}, exception.CustomEror{Code: 500, Error: err.Error()}, false
 		}
@@ -98,7 +98,7 @@ func (s photosServiceImpl) UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string,
 
 	uploadsDir := "./storage/photos"
 	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
-		err := os.Mkdir(uploadsDir, os.ModePerm)
+		err := os.MkdirAll(uploadsDir, os.ModePerm)
 		if err != nil {
 			return domain.Photos{}, err
 		}
