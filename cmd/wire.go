@@ -55,7 +55,11 @@ func NewApp(
 	productService services.ProductService,
 ) (*fiber.App, func(), error) {
 
-	app := fiber.New()
+	app := fiber.New(
+		fiber.Config{
+			BodyLimit: 30 * 1024 * 1024,
+		},
+	)
 	app.Use(cors.New())
 	app.Use(recover2.New())
 	app.Use(middleware.RecoverMiddleware())

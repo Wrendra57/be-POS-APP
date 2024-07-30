@@ -2,7 +2,7 @@ package brandTest
 
 import (
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be/cmd"
+	"github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/test"
 	"github.com/gofiber/fiber/v2"
@@ -49,7 +49,7 @@ func TestGetListBrandSuccess(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -97,7 +97,7 @@ func TestGetListBrandWitParamsSuccess(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -146,7 +146,7 @@ func TestGetListBrandWitParamsSuccessNoResult(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -195,7 +195,7 @@ func TestGetListBrandWithoutLimit(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -242,7 +242,7 @@ func TestGetListBrandWithoutOffset(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -289,7 +289,7 @@ func TestGetListBrandFailedLimit(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -334,7 +334,7 @@ func TestGetListBrandFailedOffset(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}

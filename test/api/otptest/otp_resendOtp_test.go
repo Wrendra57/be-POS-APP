@@ -2,7 +2,7 @@ package otptest
 
 import (
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be/cmd"
+	"github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
@@ -51,7 +51,7 @@ func TestResendOtpSuccess(t *testing.T) {
 	_, _, _, _, _, token := userstest.InsertNewUserTest(t, db, req)
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -100,7 +100,7 @@ func TestResendOtpInvalidToken(t *testing.T) {
 	_, _, _, _, _, token := userstest.InsertNewUserTest(t, db, req)
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -157,7 +157,7 @@ func TestResendOtpWrongToken(t *testing.T) {
 	_, _, _, _, _, _ = userstest.InsertNewUserTest(t, db, req)
 
 	db.Close()
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -212,7 +212,7 @@ func TestResendOtpEnabledAccount(t *testing.T) {
 	_ = UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 
 	db.Close()
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -266,7 +266,7 @@ func TestResendOtpMaxAccess(t *testing.T) {
 		_ = InsertOtpTest(db, domain.OTP{Otp: "131313", User_id: user.User_id, Expired_date: time.Now().Add(time.Minute)})
 	}
 	db.Close()
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}

@@ -2,7 +2,7 @@ package suplier_test
 
 import (
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be/cmd"
+	"github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
@@ -72,7 +72,7 @@ func TestSupplierCreateSuccess(t *testing.T) {
 	}
 	jsonReq, _ := json.Marshal(bodyReq)
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -262,7 +262,7 @@ func TestSupplierCreateValidationFailed(t *testing.T) {
 		t.Run(test.nameTest, func(t *testing.T) {
 			jsonReq, _ := json.Marshal(test.body)
 
-			app, clean, err := be.InitializeApp()
+			app, clean, err := main.InitializeApp()
 			if err != nil {
 				panic(err)
 			}
@@ -328,7 +328,7 @@ func TestSupplierCreateWithoutToken(t *testing.T) {
 	}
 	jsonReq, _ := json.Marshal(bodyReq)
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}

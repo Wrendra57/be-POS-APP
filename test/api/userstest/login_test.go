@@ -2,7 +2,7 @@ package userstest
 
 import (
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be/cmd"
+	"github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
@@ -53,7 +53,7 @@ func TestLoginUsingEmailSuccess(t *testing.T) {
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -117,7 +117,7 @@ func TestLoginUsingUsernameSuccess(t *testing.T) {
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -177,7 +177,7 @@ func TestLoginFailedValidation(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -314,7 +314,7 @@ func TestLoginUsernameNotFound(t *testing.T) {
 
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -374,7 +374,7 @@ func TestLoginAccountNotEnabled(t *testing.T) {
 	}
 	_, _, _, _, _, _ = InsertNewUserTest(t, db, req)
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -438,7 +438,7 @@ func TestLoginWrongPassword(t *testing.T) {
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
 
-	app, clean, err := be.InitializeApp()
+	app, clean, err := main.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
