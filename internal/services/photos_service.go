@@ -10,7 +10,10 @@ import (
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +21,9 @@ import (
 )
 
 type PhotosService interface {
-	UploadPhotos(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) (domain.Photos, exception.CustomEror, bool)
+	UploadPhotoService(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) (domain.Photos, exception.CustomEror, bool)
+	UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string, photo *multipart.FileHeader, owner uuid.UUID) (domain.Photos,
+		error)
 }
 
 type photosServiceImpl struct {
@@ -36,7 +41,7 @@ func NewPhotosService(PhotoRepo repositories.PhotosRepository,
 		Validate:  Validate,
 	}
 }
-func (s photosServiceImpl) UploadPhotos(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) (domain.Photos,
+func (s photosServiceImpl) UploadPhotoService(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) (domain.Photos,
 	exception.CustomEror, bool) {
 	request.Name = strings.Join(strings.Split(request.Name, " "), "-")
 	request.Foto.Filename = strings.Join(strings.Split(request.Foto.Filename, " "), "-")
@@ -74,4 +79,36 @@ func (s photosServiceImpl) UploadPhotos(ctx *fiber.Ctx, request webrequest.Photo
 	utils.PanicIfError(err)
 
 	return f, exception.CustomEror{}, true
+}
+func (s photosServiceImpl) UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string,
+	photo *multipart.FileHeader, owner uuid.UUID) (domain.Photos, error) {
+	//TODO implement me
+	name = strings.Join(strings.Split(name, " "), "-")
+	photo.Filename = strings.Join(strings.Split(photo.Filename, " "), "-")
+
+	filename := name + "-" + time.Now().Format(
+		"20060102_150405") + "-" + photo.Filename
+
+	f := domain.Photos{
+		Url:       "http://127.0.0.1:8080/foto/" + filename,
+		Owner:     owner,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	uploadsDir := "./storage/photos"
+	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
+		err := os.Mkdir(uploadsDir, os.ModePerm)
+		if err != nil {
+			return domain.Photos{}, err
+		}
+	}
+	filepath := filepath.Join(uploadsDir, filename)
+	err := ctx.SaveFile(photo, filepath)
+	utils.PanicIfError(err)
+
+	f, err = s.PhotoRepo.Insert(ctx.Context(), tx, f)
+	utils.PanicIfError(err)
+
+	return f, nil
 }

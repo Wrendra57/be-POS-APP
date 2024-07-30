@@ -2,7 +2,7 @@ package userstest
 
 import (
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be"
+	be "github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/test"
@@ -47,7 +47,7 @@ func TestRegisterUserSuccess(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -106,7 +106,7 @@ func TestRegisterUserEmailExist(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -173,7 +173,7 @@ func TestRegisterUserFailedBirtdateRequire(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -237,7 +237,7 @@ func TestRegisterUserBirtdateFormatWrong(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -302,7 +302,7 @@ func TestRegisterUserFailedValidationNameRequire(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -366,7 +366,7 @@ func TestRegisterUserFailedValidationNameMinLength(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "te",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -431,7 +431,7 @@ func TestRegisterUserFailedValidationNameMaxLength(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "Lorem ipsum odor amet, consectetuer adipiscing elit.",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -496,7 +496,7 @@ func TestRegisterUserFailedValidationGenderRequire(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "Lorem ipsum",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -561,7 +561,7 @@ func TestRegisterUserFailedValidation(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "Lorem ipsum",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -857,7 +857,7 @@ func TestRegisterUserUsernameExist(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",
@@ -940,7 +940,7 @@ func BenchmarkRegisterUser(b *testing.B) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",

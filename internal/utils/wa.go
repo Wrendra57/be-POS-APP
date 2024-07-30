@@ -4,17 +4,18 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 )
 
 func WASender(data map[string]string) {
 
-	url := os.Getenv("WA_GATEWAY_URL")
-	token := os.Getenv("TOKEN_WA_GATEWAY")
+	url := viper.GetString("WA_GATEWAY_URL")
+	token := viper.GetString("TOKEN_WA_GATEWAY")
 
+	fmt.Println("token>>", token)
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		panic(err)

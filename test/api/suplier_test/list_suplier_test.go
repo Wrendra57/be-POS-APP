@@ -2,7 +2,7 @@ package suplier
 
 import (
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be"
+	be "github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/test"
 	"github.com/gofiber/fiber/v2"

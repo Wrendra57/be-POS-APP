@@ -13,7 +13,7 @@ type Product struct {
 	CallName    string
 	AdminId     uuid.UUID
 	CategoryId  uuid.UUID
-	BrandId     uuid.UUID
+	BrandId     int
 	SupplierId  uuid.UUID
 	CreatedAt   time.Time    `json:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at"`

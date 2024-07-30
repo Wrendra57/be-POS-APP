@@ -33,7 +33,7 @@ func UploadPhoto(service services.PhotosService, validate *validator.Validate) f
 			errors := exception.FormatValidationError(err)
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
-		foto, e, erro := service.UploadPhotos(ctx, request)
+		foto, e, erro := service.UploadPhotoService(ctx, request)
 		if erro != true {
 			fmt.Println(erro)
 			return exception.CustomResponse(ctx, e.Code, e.Error, nil)

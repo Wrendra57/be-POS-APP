@@ -28,12 +28,14 @@ func InitializeApp() (*fiber.App, func(), error) {
 		repositories.NewCategoriesRepository,
 		repositories.NewBrandRepository,
 		repositories.NewSupplierRepository,
+		repositories.NewProductRepository,
 		services.NewUserService,
 		services.NewOTPService,
 		services.NewPhotosService,
 		services.NewCategoryService,
 		services.NewBrandService,
 		services.NewSupplierService,
+		services.NewProductService,
 		NewApp,
 		db.SetupRedis1,
 	)
@@ -50,6 +52,7 @@ func NewApp(
 	categoryService services.CategoryService,
 	brandService services.BrandService,
 	supplierService services.SupplierService,
+	productService services.ProductService,
 ) (*fiber.App, func(), error) {
 
 	app := fiber.New()
@@ -68,6 +71,7 @@ func NewApp(
 	routes.CategoriesRoutes(api, categoryService, validate)
 	routes.BrandRoutes(api, brandService, validate)
 	routes.SupplierRoutes(api, supplierService, validate)
+	routes.ProductRoutes(api, productService, validate)
 
 	cleanup := func() {
 		DB.Close()

@@ -2,7 +2,7 @@ package userstest
 
 import (
 	"encoding/json"
-	be "github.com/Wrendra57/Pos-app-be"
+	be "github.com/Wrendra57/Pos-app-be/cmd"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"

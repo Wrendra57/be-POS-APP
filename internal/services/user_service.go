@@ -138,6 +138,8 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 		"Phone": user.Telp,
 		"Body":  strOTP,
 	}
+
+	fmt.Println("sini")
 	utils.WASender(body)
 	//GenerateJWT for access validasi otp
 	JWTStr, err := utils.GenerateJWT(user.User_id, role.Role)
