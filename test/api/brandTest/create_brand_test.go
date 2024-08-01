@@ -283,3 +283,68 @@ func TestBrandCreateWithoutToken(t *testing.T) {
 	assert.Equalf(t, "Unauthorized", response.Message, "response message should be equal")
 	assert.Empty(t, response.Data)
 }
+
+func TestBrancCreateBodyRequestWrong(t *testing.T) {
+	test.InitConfigTest()
+
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+	req := webrequest.UserCreateRequest{
+		Name:     "testUser",
+		Gender:   "male",
+		Telp:     "08213243444",
+		Birthday: "2023-07-15",
+		Address:  "solo",
+		Email:    "testUser@gmail.com",
+		Password: "password",
+		Username: "testerrr",
+	}
+	user, _, role, _, _, _ := userstest.InsertNewUserTest(t, db, req)
+	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
+	db.Close()
+	generateToken, err := utils.GenerateJWT(user.User_id, role.Role)
+	if err != nil {
+		panic(err)
+	}
+	_ = domain.Brand{
+		Name:        "testBrand",
+		Description: "test brand description",
+	}
+	bodyReq := map[string]int{
+		"name":        23,
+		"description": 24,
+	}
+	jsonReq, _ := json.Marshal(bodyReq)
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+
+	request := CreateBrandTestRequest(t, string(jsonReq), generateToken)
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusInternalServerError, res.StatusCode)
+
+	var response webrespones.ResponseApi
+	err = json.Unmarshal(body, &response)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	assert.Equalf(t, "failed", response.Status, "response status should be ok")
+	assert.Equalf(t, "Internal server error", response.Message, "response message should be equal")
+	assert.Nil(t, response.Data)
+
+}

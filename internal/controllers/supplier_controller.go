@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
@@ -15,7 +14,6 @@ func CreateSupplier(service services.SupplierService, validate *validator.Valida
 	return func(ctx *fiber.Ctx) error {
 		request := webrequest.SupplierRequest{}
 		if err := ctx.BodyParser(&request); err != nil {
-			fmt.Println(err)
 			return exception.CustomResponse(ctx, 500, "Internal server error", nil)
 		}
 		//	validasi

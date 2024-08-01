@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
@@ -43,7 +42,6 @@ func UploadPhoto(service services.PhotosService, validate *validator.Validate) f
 		}
 		foto, e, erro := service.UploadPhotoService(ctx, request)
 		if erro != true {
-			fmt.Println(erro)
 			return exception.CustomResponse(ctx, e.Code, e.Error, nil)
 		}
 

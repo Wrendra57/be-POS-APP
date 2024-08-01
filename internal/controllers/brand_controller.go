@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
@@ -15,15 +14,12 @@ func CreateBrand(service services.BrandService, validate *validator.Validate) fi
 	return func(ctx *fiber.Ctx) error {
 		request := webrequest.BrandCreateReq{}
 		if err := ctx.BodyParser(&request); err != nil {
-			fmt.Println(err)
 			return exception.CustomResponse(ctx, 500, "Internal server error", nil)
 		}
-		//validasi
 		if err := pkg.ValidateStruct(&request, validate); err != nil {
 			errors := exception.FormatValidationError(err)
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
-
 		b, errs, e := service.CreateBrand(ctx, request)
 		if e == false {
 			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
@@ -39,7 +35,6 @@ func ListBrand(service services.BrandService, validate *validator.Validate) fibe
 		request.Params = ctx.Query("params")
 		limitStr := ctx.Query("limit")
 		offsetStr := ctx.Query("offset")
-
 		if limitStr != "" {
 			limit, err := strconv.Atoi(limitStr)
 			if err != nil {
@@ -49,7 +44,6 @@ func ListBrand(service services.BrandService, validate *validator.Validate) fibe
 		} else {
 			request.Limit = 15
 		}
-
 		if offsetStr != "" {
 			offset, err := strconv.Atoi(offsetStr)
 			if err != nil {
@@ -59,12 +53,10 @@ func ListBrand(service services.BrandService, validate *validator.Validate) fibe
 		} else {
 			request.Offset = 1
 		}
-
 		b, errs, e := service.ListBrand(ctx, request)
 		if e == false {
 			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
 		}
-
 		return exception.SuccessResponse(ctx, "Success get data brand", b)
 	}
 }
