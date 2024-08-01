@@ -471,3 +471,188 @@ func TestValidationOtpExpiredOtp(t *testing.T) {
 	assert.Equalf(t, "Code Otp Was Expired", response.Message, "response message should be equal")
 	assert.Equalf(t, nil, response.Data, "response data should be equal")
 }
+
+func TestValidationOtpValidationTokenRequired(t *testing.T) {
+	test.InitConfigTest()
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+
+	req := webrequest.UserCreateRequest{
+		Name:     "testUser",
+		Gender:   "male",
+		Telp:     "08213243444",
+		Birthday: "2023-07-15",
+		Address:  "solo",
+		Email:    "testUser@gmail.com",
+		Password: "password",
+		Username: "testerrr",
+	}
+	user, _, _, _, _, token := userstest.InsertNewUserTest(t, db, req)
+
+	_ = FindOtpRepo(db, user.User_id)
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+
+	bodyReq := map[string]string{}
+	jsonBody, err := json.Marshal(bodyReq)
+	if err != nil {
+		panic(err)
+	}
+	url := "/api/v1/users/otp/" + token
+
+	request := ValidationOtpTestRequest(t, app, "POST", url, string(jsonBody))
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	bodyResp, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
+
+	var response webrespones.ResponseApi
+
+	err = json.Unmarshal(bodyResp, &response)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+
+	}
+	assert.Equalf(t, "failed", response.Status, "respone status should be equal")
+	assert.Equalf(t, "Otp is required", response.Message, "response message should be equal")
+
+}
+
+func TestValidationOtpValidationTokenEmpty(t *testing.T) {
+	test.InitConfigTest()
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+
+	req := webrequest.UserCreateRequest{
+		Name:     "testUser",
+		Gender:   "male",
+		Telp:     "08213243444",
+		Birthday: "2023-07-15",
+		Address:  "solo",
+		Email:    "testUser@gmail.com",
+		Password: "password",
+		Username: "testerrr",
+	}
+	user, _, _, _, _, token := userstest.InsertNewUserTest(t, db, req)
+
+	_ = FindOtpRepo(db, user.User_id)
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+
+	bodyReq := map[string]string{
+		"otp": "",
+	}
+	jsonBody, err := json.Marshal(bodyReq)
+	if err != nil {
+		panic(err)
+	}
+	url := "/api/v1/users/otp/" + token
+
+	request := ValidationOtpTestRequest(t, app, "POST", url, string(jsonBody))
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	bodyResp, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
+
+	var response webrespones.ResponseApi
+
+	err = json.Unmarshal(bodyResp, &response)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+
+	}
+	assert.Equalf(t, "failed", response.Status, "respone status should be equal")
+	assert.Equalf(t, "Otp is required", response.Message, "response message should be equal")
+
+}
+
+func TestValidationOtpWrongBodyRequest(t *testing.T) {
+
+	test.InitConfigTest()
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+
+	req := webrequest.UserCreateRequest{
+		Name:     "testUser",
+		Gender:   "male",
+		Telp:     "08213243444",
+		Birthday: "2023-07-15",
+		Address:  "solo",
+		Email:    "testUser@gmail.com",
+		Password: "password",
+		Username: "testerrr",
+	}
+	user, _, _, _, _, token := userstest.InsertNewUserTest(t, db, req)
+
+	_ = FindOtpRepo(db, user.User_id)
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+
+	bodyReq := map[string]int{
+		"otp": 23,
+	}
+	jsonBody, err := json.Marshal(bodyReq)
+	if err != nil {
+		panic(err)
+	}
+	url := "/api/v1/users/otp/" + token
+
+	request := ValidationOtpTestRequest(t, app, "POST", url, string(jsonBody))
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	bodyResp, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusInternalServerError, res.StatusCode)
+
+	var response webrespones.ResponseApi
+
+	err = json.Unmarshal(bodyResp, &response)
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+
+	}
+	assert.Equalf(t, "failed", response.Status, "respone status should be equal")
+	assert.Equalf(t, "Internal Server Error", response.Message, "response message should be equal")
+
+}
