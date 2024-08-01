@@ -1,4 +1,4 @@
-package be
+package main
 
 import (
 	"github.com/Wrendra57/Pos-app-be/internal/middleware"

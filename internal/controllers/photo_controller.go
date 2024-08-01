@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
-	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
 	"github.com/Wrendra57/Pos-app-be/pkg"
 	"github.com/go-playground/validator/v10"
@@ -17,15 +16,24 @@ func UploadPhoto(service services.PhotosService, validate *validator.Validate) f
 		request := webrequest.PhotoUploadRequest{}
 
 		owner := ctx.FormValue("owner_id")
+		if owner == "" {
+			return exception.CustomResponse(ctx, 400, "owner_id is required", nil)
+		}
+
 		uuidObj, err := uuid.Parse(owner)
-		utils.PanicIfError(err)
+		if err != nil {
+			return exception.CustomResponse(ctx, 400, "owner_id is invalid", nil)
+		}
 
 		request.Owner_id = uuidObj
 
 		request.Name = ctx.FormValue("name")
 
 		file, err := ctx.FormFile("foto")
-		utils.PanicIfError(err)
+		if err != nil {
+			return exception.CustomResponse(ctx, 400, "photo is required", nil)
+		}
+
 		request.Foto = file
 
 		//validate
