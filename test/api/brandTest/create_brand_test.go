@@ -2,7 +2,7 @@ package brandTest
 
 import (
 	"encoding/json"
-	"github.com/Wrendra57/Pos-app-be/cmd"
+	be "github.com/Wrendra57/Pos-app-be"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
@@ -68,7 +68,7 @@ func TestBrandCreateSuccess(t *testing.T) {
 	}
 	jsonReq, _ := json.Marshal(bodyReq)
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -193,7 +193,7 @@ func TestBrandCreateValidationFailed(t *testing.T) {
 		t.Run(test.nameTest, func(t *testing.T) {
 			jsonReq, _ := json.Marshal(test.body)
 
-			app, clean, err := main.InitializeApp()
+			app, clean, err := be.InitializeApp()
 			if err != nil {
 				panic(err)
 			}
@@ -257,7 +257,7 @@ func TestBrandCreateWithoutToken(t *testing.T) {
 	}
 	jsonReq, _ := json.Marshal(bodyReq)
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}

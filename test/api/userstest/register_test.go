@@ -2,7 +2,7 @@ package userstest
 
 import (
 	"encoding/json"
-	"github.com/Wrendra57/Pos-app-be/cmd"
+	be "github.com/Wrendra57/Pos-app-be"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/test"
@@ -38,7 +38,7 @@ func TestRegisterUserSuccess(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -117,7 +117,7 @@ func TestRegisterUserEmailExist(t *testing.T) {
 
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -182,7 +182,7 @@ func TestRegisterUserFailedBirtdateRequire(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -246,7 +246,7 @@ func TestRegisterUserBirtdateFormatWrong(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -311,7 +311,7 @@ func TestRegisterUserFailedValidationNameRequire(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -375,7 +375,7 @@ func TestRegisterUserFailedValidationNameMinLength(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -440,7 +440,7 @@ func TestRegisterUserFailedValidationNameMaxLength(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -505,7 +505,7 @@ func TestRegisterUserFailedValidationGenderRequire(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -570,7 +570,7 @@ func TestRegisterUserFailedValidation(t *testing.T) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -868,7 +868,7 @@ func TestRegisterUserUsernameExist(t *testing.T) {
 
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -931,7 +931,7 @@ func BenchmarkRegisterUser(b *testing.B) {
 	}
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}

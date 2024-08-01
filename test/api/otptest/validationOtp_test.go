@@ -2,7 +2,7 @@ package otptest
 
 import (
 	"encoding/json"
-	"github.com/Wrendra57/Pos-app-be/cmd"
+	be "github.com/Wrendra57/Pos-app-be"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
@@ -53,7 +53,7 @@ func TestValidationOtpSuccess(t *testing.T) {
 	otp := FindOtpRepo(db, user.User_id)
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -113,7 +113,7 @@ func TestValidationOtpWrongOtp(t *testing.T) {
 
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -175,7 +175,7 @@ func TestValidationOtpInvalidToken(t *testing.T) {
 	otp := FindOtpRepo(db, user.User_id)
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -243,7 +243,7 @@ func TestValidationOtpWrongsToken(t *testing.T) {
 
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -309,7 +309,7 @@ func TestValidationOtpEnableAccount(t *testing.T) {
 
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -372,7 +372,7 @@ func TestValidationOtpDeletedOtp(t *testing.T) {
 	_ = TruncateOtp(db)
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -436,7 +436,7 @@ func TestValidationOtpExpiredOtp(t *testing.T) {
 
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}

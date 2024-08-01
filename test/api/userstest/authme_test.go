@@ -3,7 +3,7 @@ package userstest
 import (
 	"context"
 	"encoding/json"
-	"github.com/Wrendra57/Pos-app-be/cmd"
+	be "github.com/Wrendra57/Pos-app-be"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
@@ -62,7 +62,7 @@ func TestAuthMeSuccess(t *testing.T) {
 		panic(err)
 	}
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -140,7 +140,7 @@ func TestAuthMeSuccessViaRedis(t *testing.T) {
 	}
 	rdb.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -192,7 +192,7 @@ func TestAuthMeWithoutAuthorization(t *testing.T) {
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -247,7 +247,7 @@ func TestAuthMeWithoutBearer(t *testing.T) {
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -308,7 +308,7 @@ func TestAuthMeWrongFormatToken(t *testing.T) {
 		panic(err)
 	}
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -359,7 +359,7 @@ func TestAuthMeInvalidToken(t *testing.T) {
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
@@ -423,7 +423,7 @@ func TestAuthMeUserNotExist(t *testing.T) {
 		panic(err)
 	}
 
-	app, clean, err := main.InitializeApp()
+	app, clean, err := be.InitializeApp()
 	if err != nil {
 		panic(err)
 	}
