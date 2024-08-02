@@ -43,7 +43,8 @@ func customErrorMessage(err *ValidationErrorResponse) string {
 		return fmt.Sprintf("%s must be a %s", err.FailedField, err.Value)
 	case "datetime":
 		return fmt.Sprintf("%s must be a valid datetime format YYYY-MM-DD", err.FailedField)
-
+	case "gt":
+		return fmt.Sprintf("%s must be greater than %s", err.FailedField, err.Value)
 	default:
 		return fmt.Sprintf("Validation error on field %s with tag %s", err.FailedField, err.Tag)
 	}
