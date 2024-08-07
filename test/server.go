@@ -14,7 +14,7 @@ func SetupDBtest() (*pgxpool.Pool, func(), error) {
 	dbPort := "5432"
 	dbUser := "postgres"
 	dbPassword := "password"
-	dbName := "Pos_app"
+	dbName := "Pos_app_test"
 
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 
@@ -67,6 +67,7 @@ func InitConfigTest() {
 	viper.SetConfigType("env")
 	viper.AddConfigPath("../../..")
 	viper.AutomaticEnv()
+	viper.Set("MODE", "testing")
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatalf("Error reading config file: %v", err)
 	}

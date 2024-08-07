@@ -4,6 +4,7 @@ import (
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
+	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
@@ -17,6 +18,7 @@ import (
 
 type ProductService interface {
 	CreateProduct(ctx *fiber.Ctx, request webrequest.ProductCreateRequest) (domain.Product, exception.CustomEror, bool)
+	FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool)
 }
 
 type productServiceImpl struct {
@@ -69,4 +71,9 @@ func (s productServiceImpl) CreateProduct(ctx *fiber.Ctx, request webrequest.Pro
 	}
 
 	return product, exception.CustomEror{}, true
+}
+
+func (s productServiceImpl) FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool) {
+	//TODO implement me
+	panic("implement me")
 }

@@ -19,6 +19,11 @@ func NewDatabase() (*pgxpool.Pool, func(), error) {
 	dbPassword := viper.GetString("DB_PASSWORD")
 	dbName := viper.GetString("DB_NAME")
 
+	mode := viper.GetString("MODE")
+	if mode != "" {
+		fmt.Println("Using mode:", mode)
+		dbName = viper.GetString("DB_NAME_TEST")
+	}
 	// Membuat URL koneksi PostgreSQL
 	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 
