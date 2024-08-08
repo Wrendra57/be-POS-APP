@@ -88,22 +88,25 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 }
 
 func (p productRepositoryImpl) ListAll(ctx context.Context, tx pgx.Tx, request webrequest.ProductListRequest) []domain.ProductList {
-	SQL := `SELECT p.id   AS product_id,
-				   p.product_name,
-				   p.sell_price,
-				   p.call_name,
-				   c.name AS category_name,
-				   b.name AS brand_name,
-				   p.created_at,
-				   p.updated_at
+	SQL := `SELECT DISTINCT ON (p.id) p.id   AS product_id,
+                          p.product_name,
+                          p.sell_price,
+                          p.call_name,
+                          c.name AS category_name,
+                          b.name AS brand_name,
+                          ph.url AS photo_product,
+                          p.created_at,
+                          p.updated_at
 			FROM products p
 					 JOIN categories c ON c.id = p.category_id
 					 JOIN suppliers s ON s.id = p.supplier_id
 					 JOIN brands b ON b.id = p.brand_id
+					 JOIN photos ph ON ph.owner_id = p.id
 			WHERE (p.product_name ILIKE $1 OR p.call_name ILIKE $2)
 			  AND p.deleted_at IS NULL
-			ORDER BY p.product_name ASC
+			ORDER BY p.id, ph.id ASC, p.product_name ASC
 			LIMIT $3 OFFSET $4`
+
 	searchParams := "%" + request.Params + "%"
 
 	rows, err := tx.Query(ctx, SQL, searchParams, searchParams, request.Limit, request.Offset)
@@ -114,7 +117,7 @@ func (p productRepositoryImpl) ListAll(ctx context.Context, tx pgx.Tx, request w
 	for rows.Next() {
 		product := domain.ProductList{}
 		err := rows.Scan(&product.Id, &product.ProductName, &product.SellPrice, &product.CallName, &product.Category,
-			&product.Brand, &product.CreatedAt, &product.UpdatedAt)
+			&product.Brand, &product.Photo, &product.CreatedAt, &product.UpdatedAt)
 		utils.PanicIfError(err)
 		products = append(products, product)
 	}

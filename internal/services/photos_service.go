@@ -50,10 +50,8 @@ func (s photosServiceImpl) UploadPhotoService(ctx *fiber.Ctx, request webrequest
 		"20060102_150405") + "-" + request.Foto.Filename
 
 	f := domain.Photos{
-		Url:       "http://127.0.0.1:8080/foto/" + filename,
-		Owner:     request.Owner_id,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Url:   "http://127.0.0.1:8080/foto/" + filename,
+		Owner: request.Owner_id,
 	}
 
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
@@ -90,10 +88,8 @@ func (s photosServiceImpl) UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string,
 		"20060102_150405") + "-" + photo.Filename
 
 	f := domain.Photos{
-		Url:       "http://127.0.0.1:8080/foto/" + filename,
-		Owner:     owner,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Url:   "http://127.0.0.1:8080/foto/" + filename,
+		Owner: owner,
 	}
 
 	uploadsDir := "./storage/photos"

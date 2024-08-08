@@ -27,6 +27,7 @@ type ProductList struct {
 	CallName    string    `json:"call_name"`
 	Category    string    `json:"category"`
 	Brand       string    `json:"brand"`
+	Photo       string    `json:"photo"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

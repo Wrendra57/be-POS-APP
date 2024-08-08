@@ -1,0 +1,5 @@
+package productTest
+
+func InsertProductTest() {
+
+}

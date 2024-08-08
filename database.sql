@@ -15,7 +15,7 @@ CREATE TABLE users (
 
 -- Table: photos
 CREATE TABLE photos (
-                        id uuid PRIMARY KEY default uuid_generate_v4(),
+                        id serial PRIMARY KEY,
                         url VARCHAR(255) NOT NULL,
                         owner_id uuid,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

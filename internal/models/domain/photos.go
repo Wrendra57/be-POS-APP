@@ -7,7 +7,7 @@ import (
 )
 
 type Photos struct {
-	Id        uuid.UUID
+	Id        int
 	Url       string
 	Owner     uuid.UUID
 	CreatedAt time.Time

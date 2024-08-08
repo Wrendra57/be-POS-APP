@@ -27,7 +27,7 @@ func (p PhotosRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, photos doma
 	//TODO implement me
 	SQL := "INSERT INTO photos(url,owner_id) VALUES($1, $2) RETURNING id"
 
-	var id uuid.UUID
+	var id int
 
 	row := tx.QueryRow(ctx, SQL, photos.Url, photos.Owner)
 
