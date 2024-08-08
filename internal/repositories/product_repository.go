@@ -59,6 +59,12 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 				   s.name         AS supplier_name,
 				   s.contact_info AS supplier_contact_info,
 				   s.address      AS supplier_address,
+				   json_agg(
+						   json_build_object(
+								   'id', ph.id,
+								   'url', ph.url
+						   )
+				   )              AS photo_product,
 				   p.created_at,
 				   p.updated_at
 			FROM products p
@@ -66,8 +72,13 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 					 JOIN brands b ON b.id = p.brand_id
 					 JOIN suppliers s ON s.id = p.supplier_id
 					 JOIN users u ON u.user_id = p.admin_id
+					 JOIN photos ph ON ph.owner_id = p.id
 			WHERE p.id = $1
-			  AND p.deleted_at IS NULL;`
+			  AND p.deleted_at IS NULL
+			GROUP BY p.id, p.product_name, p.sell_price, p.call_name, u.user_id, u.name,
+					 c.id, c.name, c.description, b.id, b.name, b.description,
+					 s.id, s.name, s.contact_info, s.address, p.created_at, p.updated_at
+			ORDER BY p.product_name ASC;`
 
 	rows, err := tx.Query(ctx, SQL, id)
 	utils.PanicIfError(err)
@@ -79,7 +90,7 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 		err := rows.Scan(&product.Id, &product.ProductName, &product.SellPrice, &product.CallName, &product.AdminId, &product.AdminName, &product.CategoryId,
 			&product.CategoryName, &product.CategoryDescription, &product.BrandId, &product.BrandName, &product.BrandDescription,
 			&product.SupplierId, &product.SupplierName, &product.SupplierContactInfo,
-			&product.SupplierAddress, &product.CreatedAt, &product.UpdatedAt)
+			&product.SupplierAddress, &product.Photos, &product.CreatedAt, &product.UpdatedAt)
 		utils.PanicIfError(err)
 		return product, nil
 	} else {

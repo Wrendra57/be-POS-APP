@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type photo struct {
+	Id  int    `json:"id"`
+	Url string `json:"url"`
+}
 type ProductFindDetail struct {
 	Id                  uuid.UUID `json:"id"`
 	ProductName         string    `json:"product_name"`
@@ -22,6 +26,7 @@ type ProductFindDetail struct {
 	SupplierName        string    `json:"supplier_name"`
 	SupplierContactInfo string    `json:"supplier_contact_info"`
 	SupplierAddress     string    `json:"supplier_address"`
+	Photos              []photo   `json:"photos"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 }
@@ -46,6 +51,7 @@ type supplier struct {
 	SupplierContactInfo string    `json:"supplier_contact_info"`
 	SupplierAddress     string    `json:"supplier_address"`
 }
+
 type ProductFindByIdResponseApi struct {
 	Id          uuid.UUID `json:"id"`
 	ProductName string    `json:"product_name"`
@@ -55,6 +61,7 @@ type ProductFindByIdResponseApi struct {
 	Category    category  `json:"category"`
 	Brand       brand     `json:"brand"`
 	Supplier    supplier  `json:"supplier"`
+	Photos      []photo   `json:"photos"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

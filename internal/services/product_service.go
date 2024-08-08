@@ -112,6 +112,7 @@ func (s productServiceImpl) FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webre
 			SupplierContactInfo string    `json:"supplier_contact_info"`
 			SupplierAddress     string    `json:"supplier_address"`
 		}{SupplierId: product.SupplierId, SupplierName: product.SupplierName, SupplierContactInfo: product.SupplierContactInfo, SupplierAddress: product.SupplierAddress},
+		Photos:    product.Photos,
 		CreatedAt: product.CreatedAt,
 		UpdatedAt: product.UpdatedAt,
 	}, exception.CustomEror{}, true
