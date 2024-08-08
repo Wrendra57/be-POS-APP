@@ -9,6 +9,7 @@ import (
 	"github.com/Wrendra57/Pos-app-be/pkg"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"strconv"
 )
 
@@ -79,5 +80,20 @@ func CreateProduct(service services.ProductService, validate *validator.Validate
 		}
 
 		return exception.SuccessResponse(ctx, "Success", product)
+	}
+}
+func FindById(service services.ProductService, validate *validator.Validate) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		id := ctx.Params("id")
+		parsedId, err := uuid.Parse(id)
+		if err != nil {
+			return exception.CustomResponse(ctx, fiber.StatusBadRequest, "invalid id product", nil)
+		}
+		product, e, ok := service.FindProductById(ctx, parsedId)
+		if !ok {
+			return exception.CustomResponse(ctx, e.Code, e.Error, nil)
+		}
+
+		return exception.SuccessResponse(ctx, "Success get data", product)
 	}
 }

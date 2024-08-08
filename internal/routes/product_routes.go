@@ -10,4 +10,5 @@ import (
 
 func ProductRoutes(app fiber.Router, service services.ProductService, validate *validator.Validate) {
 	app.Post("/v1/product", middleware.Authenticate(), controllers.CreateProduct(service, validate))
+	app.Get("/v1/product/:id", controllers.FindById(service, validate))
 }

@@ -81,6 +81,6 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 		utils.PanicIfError(err)
 		return product, nil
 	} else {
-		return product, errors.New("product not founf")
+		return product, errors.New("Product not found")
 	}
 }

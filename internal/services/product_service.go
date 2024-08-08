@@ -75,5 +75,44 @@ func (s productServiceImpl) CreateProduct(ctx *fiber.Ctx, request webrequest.Pro
 
 func (s productServiceImpl) FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool) {
 	//TODO implement me
-	panic("implement me")
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
+
+	product := webrespones.ProductFindDetail{}
+	product, err = s.ProductRepository.FindById(ctx.Context(), tx, id)
+
+	if err != nil {
+		return webrespones.ProductFindByIdResponseApi{}, exception.CustomEror{Code: fiber.StatusNotFound, Error: err.Error()}, false
+	}
+
+	return webrespones.ProductFindByIdResponseApi{
+		Id:          product.Id,
+		ProductName: product.ProductName,
+		SellPrice:   product.SellPrice,
+		CallName:    product.CallName,
+		Admin: struct {
+			AdminId   uuid.UUID `json:"admin_id"`
+			AdminName string    `json:"admin_name"`
+		}{AdminId: product.AdminId, AdminName: product.AdminName},
+		Category: struct {
+			CategoryId          uuid.UUID `json:"category_id"`
+			CategoryName        string    `json:"category_name"`
+			CategoryDescription string    `json:"category_description"`
+		}{CategoryId: product.CategoryId, CategoryName: product.CategoryName, CategoryDescription: product.CategoryDescription},
+		Brand: struct {
+			BrandId          int    `json:"brand_id"`
+			BrandName        string `json:"brand_name"`
+			BrandDescription string `json:"brand_description"`
+		}{BrandId: product.BrandId, BrandName: product.BrandName, BrandDescription: product.BrandDescription},
+		Supplier: struct {
+			SupplierId          uuid.UUID `json:"supplier_id"`
+			SupplierName        string    `json:"supplier_name"`
+			SupplierContactInfo string    `json:"supplier_contact_info"`
+			SupplierAddress     string    `json:"supplier_address"`
+		}{SupplierId: product.SupplierId, SupplierName: product.SupplierName, SupplierContactInfo: product.SupplierContactInfo, SupplierAddress: product.SupplierAddress},
+		CreatedAt: product.CreatedAt,
+		UpdatedAt: product.UpdatedAt,
+	}, exception.CustomEror{}, true
+
 }
