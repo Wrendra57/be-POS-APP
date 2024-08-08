@@ -19,6 +19,7 @@ import (
 type ProductService interface {
 	CreateProduct(ctx *fiber.Ctx, request webrequest.ProductCreateRequest) (domain.Product, exception.CustomEror, bool)
 	FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool)
+	ListProduct(ctx *fiber.Ctx, request webrequest.ProductListRequest) []domain.ProductList
 }
 
 type productServiceImpl struct {
@@ -114,5 +115,20 @@ func (s productServiceImpl) FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webre
 		CreatedAt: product.CreatedAt,
 		UpdatedAt: product.UpdatedAt,
 	}, exception.CustomEror{}, true
+
+}
+
+func (s productServiceImpl) ListProduct(ctx *fiber.Ctx, request webrequest.ProductListRequest) []domain.ProductList {
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
+
+	request.Offset = (request.Offset - 1) * request.Limit
+	products := s.ProductRepository.ListAll(ctx.Context(), tx, request)
+
+	if len(products) == 0 {
+		products = []domain.ProductList{}
+	}
+	return products
 
 }

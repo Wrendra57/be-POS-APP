@@ -42,6 +42,9 @@ func FindByParamsSupplier(service services.SupplierService, validate *validator.
 			if err != nil {
 				return exception.CustomResponse(ctx, 400, "The 'limit' field must be number/integer", nil)
 			}
+			if limit <= 0 {
+				return exception.CustomResponse(ctx, 400, "The 'limit' field must be greater than zero", nil)
+			}
 			request.Limit = limit
 		} else {
 			request.Limit = 15
@@ -51,6 +54,9 @@ func FindByParamsSupplier(service services.SupplierService, validate *validator.
 			offset, err := strconv.Atoi(offsetStr)
 			if err != nil {
 				return exception.CustomResponse(ctx, 400, "The 'offset' field must be number/integer", nil)
+			}
+			if offset <= 0 {
+				return exception.CustomResponse(ctx, 400, "The 'offset' field must be positive", nil)
 			}
 			request.Offset = offset
 		} else {

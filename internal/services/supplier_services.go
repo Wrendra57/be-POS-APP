@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
@@ -60,7 +59,6 @@ func (s supplierServiceImpl) FindByParamSupplier(ctx *fiber.Ctx, request webrequ
 		Offset: (request.Offset - 1) * request.Limit,
 	}
 	suppliers := s.SupplierRepo.ListAll(ctx.Context(), tx, supplier)
-	fmt.Println(suppliers)
 	if len(suppliers) == 0 {
 		suppliers = []domain.Supplier{}
 	}

@@ -26,3 +26,9 @@ type ProductCreateRequest struct {
 	Supplier    supplier                `json:"supplier" validate:"required"`
 	Photo       []*multipart.FileHeader `json:"photo" validate:"required"`
 }
+
+type ProductListRequest struct {
+	Params string `json:"params" validate:"required,min=1"`
+	Limit  int    `json:"limit" validate:"required,min=1,max=30"`
+	Offset int    `json:"offset" validate:"required,min=1"`
+}

@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
@@ -83,12 +82,10 @@ func CreateProduct(service services.ProductService, validate *validator.Validate
 		return exception.SuccessResponse(ctx, "Success", product)
 	}
 }
-func FindById(service services.ProductService, validate *validator.Validate) fiber.Handler {
+func FindById(service services.ProductService) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
-		fmt.Println(id)
 		parsedId, err := uuid.Parse(id)
-		fmt.Println("parsedId" + parsedId.String())
 		if err != nil {
 			return exception.CustomResponse(ctx, fiber.StatusBadRequest, "invalid id product", nil)
 		}
@@ -98,5 +95,44 @@ func FindById(service services.ProductService, validate *validator.Validate) fib
 		}
 
 		return exception.SuccessResponse(ctx, "Success get data", product)
+	}
+}
+
+func ListProduct(service services.ProductService) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		request := webrequest.ProductListRequest{}
+
+		request.Params = ctx.Query("params")
+		limitStr := ctx.Query("limit")
+		offsetStr := ctx.Query("offset")
+
+		if limitStr != "" {
+			limit, err := strconv.Atoi(limitStr)
+			if err != nil {
+				return exception.CustomResponse(ctx, 400, "The 'limit' field must be number/integer", nil)
+			}
+			request.Limit = limit
+			if limit <= 0 {
+				return exception.CustomResponse(ctx, 400, "The 'limit' field must be greater than zero", nil)
+			}
+		} else {
+			request.Limit = 15
+		}
+
+		if offsetStr != "" {
+			offset, err := strconv.Atoi(offsetStr)
+			if err != nil {
+				return exception.CustomResponse(ctx, 400, "The 'offset' field must be number/integer", nil)
+			}
+			if offset <= 0 {
+				return exception.CustomResponse(ctx, 400, "The 'offset' field must be positive", nil)
+			}
+			request.Offset = offset
+		} else {
+			request.Offset = 1
+		}
+
+		p := service.ListProduct(ctx, request)
+		return exception.SuccessResponse(ctx, "Success get data", p)
 	}
 }

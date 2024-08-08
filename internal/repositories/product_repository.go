@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
+	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/google/uuid"
@@ -14,6 +15,7 @@ import (
 type ProductRepository interface {
 	Insert(ctx context.Context, tx pgx.Tx, product domain.Product) (domain.Product, error)
 	FindById(ctx context.Context, tx pgx.Tx, id uuid.UUID) (webrespones.ProductFindDetail, error)
+	ListAll(ctx context.Context, tx pgx.Tx, request webrequest.ProductListRequest) []domain.ProductList
 }
 
 type productRepositoryImpl struct {
@@ -83,4 +85,38 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 	} else {
 		return product, errors.New("Product not found")
 	}
+}
+
+func (p productRepositoryImpl) ListAll(ctx context.Context, tx pgx.Tx, request webrequest.ProductListRequest) []domain.ProductList {
+	SQL := `SELECT p.id   AS product_id,
+				   p.product_name,
+				   p.sell_price,
+				   p.call_name,
+				   c.name AS category_name,
+				   b.name AS brand_name,
+				   p.created_at,
+				   p.updated_at
+			FROM products p
+					 JOIN categories c ON c.id = p.category_id
+					 JOIN suppliers s ON s.id = p.supplier_id
+					 JOIN brands b ON b.id = p.brand_id
+			WHERE (p.product_name ILIKE $1 OR p.call_name ILIKE $2)
+			  AND p.deleted_at IS NULL
+			ORDER BY p.product_name ASC
+			LIMIT $3 OFFSET $4`
+	searchParams := "%" + request.Params + "%"
+
+	rows, err := tx.Query(ctx, SQL, searchParams, searchParams, request.Limit, request.Offset)
+	utils.PanicIfError(err)
+	defer rows.Close()
+
+	var products []domain.ProductList
+	for rows.Next() {
+		product := domain.ProductList{}
+		err := rows.Scan(&product.Id, &product.ProductName, &product.SellPrice, &product.CallName, &product.Category,
+			&product.Brand, &product.CreatedAt, &product.UpdatedAt)
+		utils.PanicIfError(err)
+		products = append(products, product)
+	}
+	return products
 }
