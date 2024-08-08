@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
@@ -85,7 +86,9 @@ func CreateProduct(service services.ProductService, validate *validator.Validate
 func FindById(service services.ProductService, validate *validator.Validate) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		id := ctx.Params("id")
+		fmt.Println(id)
 		parsedId, err := uuid.Parse(id)
+		fmt.Println("parsedId" + parsedId.String())
 		if err != nil {
 			return exception.CustomResponse(ctx, fiber.StatusBadRequest, "invalid id product", nil)
 		}

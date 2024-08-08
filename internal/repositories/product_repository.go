@@ -64,7 +64,7 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 					 JOIN brands b ON b.id = p.brand_id
 					 JOIN suppliers s ON s.id = p.supplier_id
 					 JOIN users u ON u.user_id = p.admin_id
-			WHERE p.id = 'a4c7da91-3dd5-4302-a538-97f217b82daa'
+			WHERE p.id = $1
 			  AND p.deleted_at IS NULL;`
 
 	rows, err := tx.Query(ctx, SQL, id)
@@ -76,7 +76,7 @@ func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.
 	if rows.Next() {
 		err := rows.Scan(&product.Id, &product.ProductName, &product.SellPrice, &product.CallName, &product.AdminId, &product.AdminName, &product.CategoryId,
 			&product.CategoryName, &product.CategoryDescription, &product.BrandId, &product.BrandName, &product.BrandDescription,
-			&product.SupplierId, &product.SupplierId, &product.SupplierName, &product.SupplierContactInfo,
+			&product.SupplierId, &product.SupplierName, &product.SupplierContactInfo,
 			&product.SupplierAddress, &product.CreatedAt, &product.UpdatedAt)
 		utils.PanicIfError(err)
 		return product, nil
