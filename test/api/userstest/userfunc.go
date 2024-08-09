@@ -55,7 +55,7 @@ func InsertNewUserTest(t *testing.T, db *pgxpool.Pool, request webrequest.UserCr
 	utils.PanicIfError(err)
 
 	//insert to db roles
-	role, err := roleRepo.Insert(context.Background(), tx, domain.Roles{Role: "member", User_id: user.User_id})
+	role, err := roleRepo.Insert(context.Background(), tx, domain.Roles{Role: "admin", User_id: user.User_id})
 	utils.PanicIfError(err)
 
 	//create OTP using random 6 angka
@@ -65,7 +65,7 @@ func InsertNewUserTest(t *testing.T, db *pgxpool.Pool, request webrequest.UserCr
 	//Insert OTP to db
 	otp = otpRepo.Insert(context.Background(), tx, otp)
 
-	photo, _ := photoRepo.Insert(context.Background(), tx, domain.Photos{Url: "http://127.0.0.1:8080/foto/default-photo-picture.png", Owner: user.User_id})
+	photo := photoRepo.Insert(context.Background(), tx, domain.Photos{Url: "http://127.0.0.1:8080/foto/default-photo-picture.png", Owner: user.User_id})
 
 	JWTStr, err := utils.GenerateJWT(user.User_id, role.Role)
 	utils.PanicIfError(err)

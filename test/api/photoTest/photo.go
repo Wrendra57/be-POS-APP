@@ -16,7 +16,7 @@ func InsertPhotosTest(db *pgxpool.Pool, photo domain.Photos) domain.Photos {
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(context.Background(), tx)
 
-	photo, err = photoRepo.Insert(context.Background(), tx, photo)
+	photo = photoRepo.Insert(context.Background(), tx, photo)
 	utils.PanicIfError(err)
 	return photo
 }

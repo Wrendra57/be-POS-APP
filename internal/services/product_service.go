@@ -147,7 +147,7 @@ func (s productServiceImpl) DeleteProduct(ctx *fiber.Ctx, id uuid.UUID) error {
 		return err
 	}
 	if product.DeletedAt.Valid == true {
-		return errors.New("product not found / was deleted")
+		return errors.New("product was deleted")
 	}
 
 	_ = s.ProductRepository.Delete(ctx.Context(), tx, id)
