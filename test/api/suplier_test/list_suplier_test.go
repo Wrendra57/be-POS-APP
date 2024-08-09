@@ -317,6 +317,52 @@ func TestGetListSupplierFailedLimit(t *testing.T) {
 	assert.Empty(t, response.Data)
 }
 
+func TestGetListSupplierFailedNegativeLimit(t *testing.T) {
+	test.InitConfigTest()
+
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
+
+	for i := 0; i < 5; i++ {
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
+	}
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+	limit := "limit=-2"
+	url := "/api/v1/supplier?" + limit
+	request := GetListSupplier(t, url, "")
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
+
+	var response responeListTest
+	err = json.Unmarshal(body, &response)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	assert.Equalf(t, "failed", response.Status, "response status should be ok")
+	assert.Equalf(t, "The 'limit' field must be greater than zero", response.Message, "response message should be equal")
+	assert.Empty(t, response.Data)
+}
+
 func TestGetListSupplierFailedOffset(t *testing.T) {
 	test.InitConfigTest()
 
@@ -360,5 +406,50 @@ func TestGetListSupplierFailedOffset(t *testing.T) {
 	}
 	assert.Equalf(t, "failed", response.Status, "response status should be ok")
 	assert.Equalf(t, "The 'offset' field must be number/integer", response.Message, "response message should be equal")
+	assert.Empty(t, response.Data)
+}
+func TestGetListSupplierFailedNegativeOffset(t *testing.T) {
+	test.InitConfigTest()
+
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+	supplier := domain.Supplier{Name: "test", ContactInfo: "test supplier", Address: "test supplier"}
+
+	for i := 0; i < 5; i++ {
+		name := supplier.Name + strconv.Itoa(i)
+		_ = InsertSupplierTest(db, domain.Supplier{Name: name, ContactInfo: "test supplier", Address: "test supplier"})
+	}
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+	offset := "offset=-2"
+	url := "/api/v1/supplier?" + offset
+	request := GetListSupplier(t, url, "")
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
+
+	var response responeListTest
+	err = json.Unmarshal(body, &response)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	assert.Equalf(t, "failed", response.Status, "response status should be ok")
+	assert.Equalf(t, "The 'offset' field must be positive", response.Message, "response message should be equal")
 	assert.Empty(t, response.Data)
 }

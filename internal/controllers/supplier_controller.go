@@ -21,10 +21,8 @@ func CreateSupplier(service services.SupplierService, validate *validator.Valida
 			errors := exception.FormatValidationError(err)
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
-		s, errs, e := service.CreateSupplier(ctx, request)
-		if e == false {
-			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
-		}
+		s := service.CreateSupplier(ctx, request)
+
 		return exception.SuccessResponse(ctx, "Success create supplier", s)
 	}
 }
@@ -63,7 +61,7 @@ func FindByParamsSupplier(service services.SupplierService, validate *validator.
 			request.Offset = 1
 		}
 
-		s, _ := service.FindByParamSupplier(ctx, request)
+		s := service.FindByParamSupplier(ctx, request)
 		return exception.SuccessResponse(ctx, "Success get data supplier", s)
 	}
 

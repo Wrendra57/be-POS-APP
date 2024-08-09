@@ -57,9 +57,7 @@ func CreateProduct(service services.ProductService, validate *validator.Validate
 		}
 
 		form, err := ctx.MultipartForm()
-		if err != nil {
-			return exception.CustomResponse(ctx, 400, "cannot parse multipartform", nil)
-		}
+		utils.PanicIfError(err)
 
 		file := form.File["photo"]
 		utils.PanicIfError(err)
@@ -74,11 +72,7 @@ func CreateProduct(service services.ProductService, validate *validator.Validate
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
 
-		product, e, ok := service.CreateProduct(ctx, request)
-		if !ok {
-			return exception.CustomResponse(ctx, e.Code, e.Error, nil)
-		}
-
+		product := service.CreateProduct(ctx, request)
 		return exception.SuccessResponse(ctx, "Success", product)
 	}
 }

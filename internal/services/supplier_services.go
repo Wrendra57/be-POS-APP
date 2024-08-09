@@ -6,15 +6,14 @@ import (
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
-	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type SupplierService interface {
-	CreateSupplier(ctx *fiber.Ctx, r webrequest.SupplierRequest) (domain.Supplier, exception.CustomEror, bool)
-	FindByParamSupplier(ctx *fiber.Ctx, request webrequest.SupplierListRequest) ([]domain.Supplier, bool)
+	CreateSupplier(ctx *fiber.Ctx, r webrequest.SupplierRequest) domain.Supplier
+	FindByParamSupplier(ctx *fiber.Ctx, request webrequest.SupplierListRequest) []domain.Supplier
 }
 
 type supplierServiceImpl struct {
@@ -30,7 +29,7 @@ func NewSupplierService(supplierRepo repositories.SupplierRepository, db *pgxpoo
 		Validate:     validate,
 	}
 }
-func (s supplierServiceImpl) CreateSupplier(ctx *fiber.Ctx, r webrequest.SupplierRequest) (domain.Supplier, exception.CustomEror, bool) {
+func (s supplierServiceImpl) CreateSupplier(ctx *fiber.Ctx, r webrequest.SupplierRequest) domain.Supplier {
 	//start db tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
@@ -41,14 +40,11 @@ func (s supplierServiceImpl) CreateSupplier(ctx *fiber.Ctx, r webrequest.Supplie
 		ContactInfo: r.ContactInfo,
 		Address:     r.Address,
 	}
-	supplier, err = s.SupplierRepo.Insert(ctx.Context(), tx, supplier)
-	if err != nil {
-		return domain.Supplier{}, exception.CustomEror{Code: 400, Error: err.Error()}, false
-	}
-	return supplier, exception.CustomEror{}, true
+	supplier = s.SupplierRepo.Insert(ctx.Context(), tx, supplier)
+	return supplier
 
 }
-func (s supplierServiceImpl) FindByParamSupplier(ctx *fiber.Ctx, request webrequest.SupplierListRequest) ([]domain.Supplier, bool) {
+func (s supplierServiceImpl) FindByParamSupplier(ctx *fiber.Ctx, request webrequest.SupplierListRequest) []domain.Supplier {
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(ctx.Context(), tx)
@@ -62,5 +58,5 @@ func (s supplierServiceImpl) FindByParamSupplier(ctx *fiber.Ctx, request webrequ
 	if len(suppliers) == 0 {
 		suppliers = []domain.Supplier{}
 	}
-	return suppliers, true
+	return suppliers
 }

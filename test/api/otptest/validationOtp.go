@@ -81,7 +81,7 @@ func InsertOtpTest(db *pgxpool.Pool, otp domain.OTP) error {
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(context.Background(), tx)
 
-	_, err = otpRepo.Insert(context.Background(), tx, otp)
+	_ = otpRepo.Insert(context.Background(), tx, otp)
 	utils.PanicIfError(err)
 	return nil
 }

@@ -57,7 +57,7 @@ func TestUploadPhotoSucccess(t *testing.T) {
 	user, _, role, _, _, _ := userstest.InsertNewUserTest(t, db, req)
 	_ = otptest.UpdateOauthTest(db, domain.Oauth{User_id: user.User_id, Is_enabled: true})
 	db.Close()
-
+	defer os.RemoveAll("./storage")
 	generateToken, err := utils.GenerateJWT(user.User_id, role.Role)
 	if err != nil {
 		panic(err)

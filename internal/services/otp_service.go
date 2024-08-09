@@ -16,7 +16,7 @@ import (
 )
 
 type OTPService interface {
-	CreateOTP(ctx *fiber.Ctx, uuid uuid.UUID) (domain.OTP, exception.CustomEror, bool)
+	CreateOTP(ctx *fiber.Ctx, uuid uuid.UUID) domain.OTP
 	ValidateOtpAccount(ctx *fiber.Ctx, otp webrequest.ValidateOtpRequest) (exception.CustomEror, bool)
 	ReSendOtp(ctx *fiber.Ctx, token string) (exception.CustomEror, bool)
 }
@@ -40,7 +40,7 @@ func NewOTPService(OauthRepo repositories.OauthRepository, userRepo repositories
 	}
 }
 
-func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) (domain.OTP, exception.CustomEror, bool) {
+func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) domain.OTP {
 	now := time.Now()
 
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
@@ -55,11 +55,8 @@ func (s *otpServiceImpl) CreateOTP(ctx *fiber.Ctx, u uuid.UUID) (domain.OTP, exc
 		Created_at:   now,
 		Updated_at:   now,
 	}
-	otp, err = s.OTPRepository.Insert(ctx.Context(), tx, otp)
-	if err != nil {
-		return domain.OTP{}, exception.CustomEror{Code: 500, Error: "Internal Server Error"}, false
-	}
-	return otp, exception.CustomEror{}, true
+	otp = s.OTPRepository.Insert(ctx.Context(), tx, otp)
+	return otp
 }
 
 func (s *otpServiceImpl) ValidateOtpAccount(ctx *fiber.Ctx, o webrequest.ValidateOtpRequest) (exception.CustomEror, bool) {
@@ -115,12 +112,12 @@ func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, token string) (exception.Cust
 
 	oauth, err := s.OauthRepo.FindByUUID(ctx, tx, parsedToken.User_id)
 	if err != nil {
-		fmt.Println(err)
 		return exception.CustomEror{Code: fiber.StatusNotFound, Error: "Account not found"}, false
 	}
 	if oauth.Is_enabled == true {
 		return exception.CustomEror{Code: fiber.StatusBadRequest, Error: "Account is already enabled"}, false
 	}
+	user, _ := s.UserRepo.FindByID(ctx, tx, parsedToken.User_id)
 
 	//cek dalam 5 menit resend otp berapa kali
 	otps, err := s.OTPRepository.FindAllByUserIdAroundTime(ctx, tx, time.Now().Add(time.Minute*5*-1), time.Now(),
@@ -132,17 +129,17 @@ func (s *otpServiceImpl) ReSendOtp(ctx *fiber.Ctx, token string) (exception.Cust
 		return exception.CustomEror{Code: fiber.StatusBadRequest, Error: msgStr}, false
 	}
 
-	otp, errS, e := s.CreateOTP(ctx, parsedToken.User_id)
-	if e != true {
-		fmt.Println(e)
-		return errS, false
-	}
+	otp := s.CreateOTP(ctx, parsedToken.User_id)
 
-	//sending email code
+	//sending  code
 	strOTP := "Halo " + oauth.Username + ",,, ini kode Otp kamu " + otp.Otp + " expired in " + otp.Expired_date.String()
-	fmt.Println(strOTP)
-	//err = utils.SendEmail(oauth.Email, "OTP-ACCOUNT", strOTP)
-	//utils.PanicIfError(err)
+
+	//sending otp via wa
+	body := map[string]string{
+		"Phone": user.Telp,
+		"Body":  strOTP,
+	}
+	utils.WASender(body)
 
 	return exception.CustomEror{}, true
 }

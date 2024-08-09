@@ -79,10 +79,7 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 
 	//hashing password using bycript
 	hashedPassword, err := utils.HashPassword(request.Password)
-	if err != nil {
-		return "", exception.CustomEror{Code: fiber.StatusInternalServerError,
-			Error: "Error hashing password "}, err
-	}
+	utils.PanicIfError(err)
 
 	user := domain.User{
 		Name:       request.Name,
@@ -120,8 +117,7 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 		Created_at: time.Now(), Updated_at: time.Now()}
 
 	//Insert OTP to db
-	otp, err = s.OtpRepository.Insert(ctx.Context(), tx, otp)
-	utils.PanicIfError(err)
+	otp = s.OtpRepository.Insert(ctx.Context(), tx, otp)
 
 	//insert photo default to db
 	_, err = s.PhotoRepository.Insert(ctx.Context(), tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
@@ -133,13 +129,10 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	//utils.PanicIfError(err)
 
 	//sending otp via wa
-
 	body := map[string]string{
 		"Phone": user.Telp,
 		"Body":  strOTP,
 	}
-
-	fmt.Println("sini")
 	utils.WASender(body)
 	//GenerateJWT for access validasi otp
 	JWTStr, err := utils.GenerateJWT(user.User_id, role.Role)

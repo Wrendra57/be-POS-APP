@@ -7,7 +7,6 @@ import (
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
-	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -15,9 +14,8 @@ import (
 )
 
 type CategoryService interface {
-	CreateCategory(ctx *fiber.Ctx, r webrequest.CategoryCreateReq) (domain.Category, exception.CustomEror, bool)
-	FindByParamsCategory(ctx *fiber.Ctx, r webrequest.CategoryFindByParam) ([]domain.Category, exception.CustomEror,
-		bool)
+	CreateCategory(ctx *fiber.Ctx, r webrequest.CategoryCreateReq) domain.Category
+	FindByParamsCategory(ctx *fiber.Ctx, r webrequest.CategoryFindByParam) []domain.Category
 }
 
 type categoryServiceImpl struct {
@@ -34,7 +32,7 @@ func NewCategoryService(categoryRepo repositories.CategoriesRespository, db *pgx
 	}
 }
 
-func (s categoryServiceImpl) CreateCategory(ctx *fiber.Ctx, r webrequest.CategoryCreateReq) (domain.Category, exception.CustomEror, bool) {
+func (s categoryServiceImpl) CreateCategory(ctx *fiber.Ctx, r webrequest.CategoryCreateReq) domain.Category {
 
 	//start db tx
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
@@ -47,14 +45,11 @@ func (s categoryServiceImpl) CreateCategory(ctx *fiber.Ctx, r webrequest.Categor
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}
-	category, err = s.CategoryRepo.Insert(ctx.Context(), tx, category)
-	if err != nil {
-		return domain.Category{}, exception.CustomEror{Code: 500, Error: "Invalid Server Error"}, false
-	}
-	return category, exception.CustomEror{}, true
+	category = s.CategoryRepo.Insert(ctx.Context(), tx, category)
+	return category
 }
 
-func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.CategoryFindByParam) ([]domain.Category, exception.CustomEror, bool) {
+func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.CategoryFindByParam) []domain.Category {
 	//TODO implement me
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
 	utils.PanicIfError(err)
@@ -72,5 +67,5 @@ func (s categoryServiceImpl) FindByParamsCategory(ctx *fiber.Ctx, r webrequest.C
 		categories = []domain.Category{}
 	}
 
-	return categories, exception.CustomEror{}, true
+	return categories
 }

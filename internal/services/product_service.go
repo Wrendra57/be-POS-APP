@@ -17,7 +17,7 @@ import (
 )
 
 type ProductService interface {
-	CreateProduct(ctx *fiber.Ctx, request webrequest.ProductCreateRequest) (domain.Product, exception.CustomEror, bool)
+	CreateProduct(ctx *fiber.Ctx, request webrequest.ProductCreateRequest) domain.Product
 	FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool)
 	ListProduct(ctx *fiber.Ctx, request webrequest.ProductListRequest) []domain.ProductList
 }
@@ -41,7 +41,7 @@ func NewProductService(db *pgxpool.Pool,
 	}
 }
 
-func (s productServiceImpl) CreateProduct(ctx *fiber.Ctx, request webrequest.ProductCreateRequest) (domain.Product, exception.CustomEror, bool) {
+func (s productServiceImpl) CreateProduct(ctx *fiber.Ctx, request webrequest.ProductCreateRequest) domain.Product {
 	//TODO implement me
 	adminId, _ := ctx.Locals("user_id").(uuid.UUID)
 	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
@@ -71,7 +71,7 @@ func (s productServiceImpl) CreateProduct(ctx *fiber.Ctx, request webrequest.Pro
 		photos = append(photos, p)
 	}
 
-	return product, exception.CustomEror{}, true
+	return product
 }
 
 func (s productServiceImpl) FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool) {

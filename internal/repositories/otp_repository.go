@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/gofiber/fiber/v2"
@@ -13,7 +12,7 @@ import (
 )
 
 type OtpRepository interface {
-	Insert(ctx context.Context, tx pgx.Tx, otp domain.OTP) (domain.OTP, error)
+	Insert(ctx context.Context, tx pgx.Tx, otp domain.OTP) domain.OTP
 	FindByUUID(ctx context.Context, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error)
 	FindAllByUserIdAroundTime(ctx *fiber.Ctx, tx pgx.Tx, timeStart, timeEnd time.Time, user_id uuid.UUID) ([]domain.OTP, error)
 }
@@ -25,7 +24,7 @@ func NewOtpRepository() OtpRepository {
 	return &OtpRepositoryImpl{}
 }
 
-func (OtpRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, o domain.OTP) (domain.OTP, error) {
+func (OtpRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, o domain.OTP) domain.OTP {
 	//TODO implement me
 	SQL := "INSERT INTO otp(user_id, otp, expired_date, created_at, updated_at) VALUES($1, $2, $3, $4,$5) returning id"
 
@@ -35,14 +34,10 @@ func (OtpRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, o domain.OTP) (d
 
 	err := row.Scan(&id)
 
-	if err != nil {
-		fmt.Println("repo insert otp ==>  " + err.Error())
-		return o, err // Mengembalikan kesalahan yang terjadi
-	}
+	utils.PanicIfError(err)
 
 	o.Id = id
-	fmt.Println(o)
-	return o, nil
+	return o
 }
 
 func (OtpRepositoryImpl) FindByUUID(ctx context.Context, tx pgx.Tx, uuid uuid.UUID) (domain.OTP, error) {

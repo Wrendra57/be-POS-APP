@@ -63,8 +63,7 @@ func InsertNewUserTest(t *testing.T, db *pgxpool.Pool, request webrequest.UserCr
 		Created_at: time.Now(), Updated_at: time.Now()}
 
 	//Insert OTP to db
-	otp, err = otpRepo.Insert(context.Background(), tx, otp)
-	utils.PanicIfError(err)
+	otp = otpRepo.Insert(context.Background(), tx, otp)
 
 	photo, _ := photoRepo.Insert(context.Background(), tx, domain.Photos{Url: "http://127.0.0.1:8080/foto/default-photo-picture.png", Owner: user.User_id})
 

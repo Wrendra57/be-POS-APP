@@ -16,7 +16,7 @@ func InsertBrandTest(db *pgxpool.Pool, brand domain.Brand) domain.Brand {
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(context.Background(), tx)
 
-	brand, err = brandRepo.Insert(context.Background(), tx, brand)
+	brand = brandRepo.Insert(context.Background(), tx, brand)
 	utils.PanicIfError(err)
 	return brand
 }

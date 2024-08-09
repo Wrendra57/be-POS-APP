@@ -41,7 +41,7 @@ func TestValidationOtpSuccess(t *testing.T) {
 	req := webrequest.UserCreateRequest{
 		Name:     "testUser",
 		Gender:   "male",
-		Telp:     "08213243444",
+		Telp:     "6282132549879",
 		Birthday: "2023-07-15",
 		Address:  "solo",
 		Email:    "testUser@gmail.com",

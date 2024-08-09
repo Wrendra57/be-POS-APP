@@ -10,7 +10,7 @@ import (
 )
 
 type SupplierRepository interface {
-	Insert(ctx context.Context, tx pgx.Tx, supplier domain.Supplier) (domain.Supplier, error)
+	Insert(ctx context.Context, tx pgx.Tx, supplier domain.Supplier) domain.Supplier
 	ListAll(ctx context.Context, tx pgx.Tx, request webrequest.SupplierListRequest) []domain.Supplier
 }
 
@@ -20,7 +20,7 @@ type supplierRepositoryImpl struct {
 func NewSupplierRepository() SupplierRepository {
 	return &supplierRepositoryImpl{}
 }
-func (s supplierRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, supplier domain.Supplier) (domain.Supplier, error) {
+func (s supplierRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, supplier domain.Supplier) domain.Supplier {
 	//TODO implement me
 	SQL := "INSERT INTO suppliers(name, contact_info, address) VALUES ($1, $2, $3) RETURNING id"
 
@@ -28,11 +28,9 @@ func (s supplierRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, supplier 
 	row := tx.QueryRow(ctx, SQL, supplier.Name, supplier.ContactInfo, supplier.Address)
 
 	err := row.Scan(&id)
-	if err != nil {
-		return domain.Supplier{}, err
-	}
+	utils.PanicIfError(err)
 	supplier.Id = id
-	return supplier, nil
+	return supplier
 }
 func (s supplierRepositoryImpl) ListAll(ctx context.Context, tx pgx.Tx, request webrequest.SupplierListRequest) []domain.Supplier {
 

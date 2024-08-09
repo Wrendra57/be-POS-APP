@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
@@ -62,16 +61,12 @@ func (s photosServiceImpl) UploadPhotoService(ctx *fiber.Ctx, request webrequest
 	uploadsDir := "./storage/photos"
 	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
 		err := os.MkdirAll(uploadsDir, os.ModePerm)
-		if err != nil {
-			return domain.Photos{}, exception.CustomEror{Code: 500, Error: err.Error()}, false
-		}
+		utils.PanicIfError(err)
 	}
 
 	filepath := filepath.Join(uploadsDir, filename)
 	err = ctx.SaveFile(request.Foto, filepath)
 	utils.PanicIfError(err)
-
-	fmt.Println(filepath)
 
 	f, err = s.PhotoRepo.Insert(ctx.Context(), tx, f)
 	utils.PanicIfError(err)
@@ -95,9 +90,7 @@ func (s photosServiceImpl) UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string,
 	uploadsDir := "./storage/photos"
 	if _, err := os.Stat(uploadsDir); os.IsNotExist(err) {
 		err := os.MkdirAll(uploadsDir, os.ModePerm)
-		if err != nil {
-			return domain.Photos{}, err
-		}
+		utils.PanicIfError(err)
 	}
 	filepath := filepath.Join(uploadsDir, filename)
 	err := ctx.SaveFile(photo, filepath)

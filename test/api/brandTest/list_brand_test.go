@@ -314,6 +314,53 @@ func TestGetListBrandFailedLimit(t *testing.T) {
 	assert.Equalf(t, "The 'limit' field must be number/integer", response.Message, "response message should be equal")
 	assert.Empty(t, response.Data)
 }
+
+func TestGetListBrandNegativeLimit(t *testing.T) {
+	test.InitConfigTest()
+
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+	brand := domain.Brand{Name: "test", Description: "test brand"}
+
+	for i := 0; i < 5; i++ {
+		name := brand.Name + strconv.Itoa(i)
+		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+	}
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+	limit := "limit=-20"
+	url := "/api/v1/brands?" + limit
+	request := GetListBrand(t, url, "")
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
+
+	var response ResponeListTest
+	err = json.Unmarshal(body, &response)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	assert.Equalf(t, "failed", response.Status, "response status should be ok")
+	assert.Equalf(t, "The 'limit' field must be greater than zero", response.Message, "response message should be equal")
+	assert.Empty(t, response.Data)
+}
+
 func TestGetListBrandFailedOffset(t *testing.T) {
 	test.InitConfigTest()
 
@@ -357,5 +404,51 @@ func TestGetListBrandFailedOffset(t *testing.T) {
 	}
 	assert.Equalf(t, "failed", response.Status, "response status should be ok")
 	assert.Equalf(t, "The 'offset' field must be number/integer", response.Message, "response message should be equal")
+	assert.Empty(t, response.Data)
+}
+
+func TestGetListBrandNegativeOffset(t *testing.T) {
+	test.InitConfigTest()
+
+	db, _, err := test.SetupDBtest()
+	if err != nil {
+		panic(err)
+	}
+
+	err = test.TruncateDB(db)
+	if err != nil {
+		panic(err)
+	}
+	brand := domain.Brand{Name: "test", Description: "test brand"}
+
+	for i := 0; i < 5; i++ {
+		name := brand.Name + strconv.Itoa(i)
+		_ = InsertBrandTest(db, domain.Brand{Name: name, Description: "test brand"})
+	}
+	db.Close()
+
+	app, clean, err := be.InitializeApp()
+	if err != nil {
+		panic(err)
+	}
+	defer clean()
+	offset := "offset=-1"
+	url := "/api/v1/brands?" + offset
+	request := GetListBrand(t, url, "")
+	res, err := app.Test(request, 3000)
+	assert.Nil(t, err)
+
+	body, err := ioutil.ReadAll(res.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, fiber.StatusBadRequest, res.StatusCode)
+
+	var response ResponeListTest
+	err = json.Unmarshal(body, &response)
+
+	if err != nil {
+		log.Fatalf("Error unmarshalling JSON: %v", err)
+	}
+	assert.Equalf(t, "failed", response.Status, "response status should be ok")
+	assert.Equalf(t, "The 'offset' field must be positive", response.Message, "response message should be equal")
 	assert.Empty(t, response.Data)
 }

@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
@@ -12,7 +11,7 @@ import (
 )
 
 type CategoriesRespository interface {
-	Insert(ctx context.Context, tx pgx.Tx, c domain.Category) (domain.Category, error)
+	Insert(ctx context.Context, tx pgx.Tx, c domain.Category) domain.Category
 	FindByParams(ctx *fiber.Ctx, tx pgx.Tx, s webrequest.CategoryFindByParam) []domain.Category
 }
 
@@ -23,19 +22,16 @@ func NewCategoriesRepository() CategoriesRespository {
 	return &categoriesRespositoryImpl{}
 }
 
-func (r categoriesRespositoryImpl) Insert(ctx context.Context, tx pgx.Tx, c domain.Category) (domain.Category, error) {
+func (r categoriesRespositoryImpl) Insert(ctx context.Context, tx pgx.Tx, c domain.Category) domain.Category {
 	SQL := "INSERT INTO categories(name, description) VALUES ($1, $2) RETURNING id"
 
 	var id uuid.UUID
 	row := tx.QueryRow(ctx, SQL, c.Name, c.Description)
 
 	err := row.Scan(&id)
-	if err != nil {
-		fmt.Println("repo insert Category ==>  " + err.Error())
-		return domain.Category{}, err
-	}
+	utils.PanicIfError(err)
 	c.Id = id
-	return c, nil
+	return c
 }
 func (r categoriesRespositoryImpl) FindByParams(ctx *fiber.Ctx, tx pgx.Tx,
 	request webrequest.CategoryFindByParam) []domain.Category {

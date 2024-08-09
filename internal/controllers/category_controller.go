@@ -24,10 +24,7 @@ func CreateCategory(service services.CategoryService, validate *validator.Valida
 			errors := exception.FormatValidationError(err)
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
-		c, errs, e := service.CreateCategory(ctx, request)
-		if e == false {
-			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
-		}
+		c := service.CreateCategory(ctx, request)
 		return exception.SuccessResponse(ctx, "Success create category", c)
 	}
 
@@ -66,10 +63,8 @@ func FindByParams(service services.CategoryService, validate *validator.Validate
 			request.Offset = 1
 		}
 
-		c, errs, e := service.FindByParamsCategory(ctx, request)
-		if e == false {
-			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
-		}
+		c := service.FindByParamsCategory(ctx, request)
+
 		return exception.SuccessResponse(ctx, "Success get data categories", c)
 	}
 

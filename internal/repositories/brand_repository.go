@@ -10,7 +10,7 @@ import (
 )
 
 type BrandRepository interface {
-	Insert(ctx context.Context, tx pgx.Tx, c domain.Brand) (domain.Brand, error)
+	Insert(ctx context.Context, tx pgx.Tx, c domain.Brand) domain.Brand
 	ListAll(ctx *fiber.Ctx, tx pgx.Tx, request webrequest.BrandGetRequest) []domain.Brand
 }
 
@@ -21,7 +21,7 @@ func NewBrandRepository() BrandRepository {
 	return &brandRepositoryImpl{}
 }
 
-func (r brandRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, brand domain.Brand) (domain.Brand, error) {
+func (r brandRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, brand domain.Brand) domain.Brand {
 	//TODO implement me
 	SQL := "INSERT INTO brands(name, description) VALUES ($1, $2) RETURNING id"
 
@@ -29,11 +29,9 @@ func (r brandRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, brand domain
 	row := tx.QueryRow(ctx, SQL, brand.Name, brand.Description)
 
 	err := row.Scan(&id)
-	if err != nil {
-		return domain.Brand{}, err
-	}
+	utils.PanicIfError(err)
 	brand.Id = id
-	return brand, nil
+	return brand
 }
 
 func (r brandRepositoryImpl) ListAll(ctx *fiber.Ctx, tx pgx.Tx, request webrequest.BrandGetRequest) []domain.Brand {

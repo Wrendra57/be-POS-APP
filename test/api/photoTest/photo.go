@@ -1,4 +1,4 @@
-package suplier
+package photoTest
 
 import (
 	"context"
@@ -9,13 +9,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func InsertSupplierTest(db *pgxpool.Pool, supplier domain.Supplier) domain.Supplier {
-	supplierRepo := repositories.NewSupplierRepository()
+func InsertPhotosTest(db *pgxpool.Pool, photo domain.Photos) domain.Photos {
+	photoRepo := repositories.NewPhotosRepository()
 
 	tx, err := db.BeginTx(context.Background(), config.TxConfig())
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(context.Background(), tx)
 
-	supplier = supplierRepo.Insert(context.Background(), tx, supplier)
-	return supplier
+	photo, err = photoRepo.Insert(context.Background(), tx, photo)
+	utils.PanicIfError(err)
+	return photo
 }

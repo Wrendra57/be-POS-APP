@@ -38,7 +38,7 @@ func CreateProductTestReq(t *testing.T, body *bytes.Buffer, token string, writer
 
 func TestCreateProductSuccess(t *testing.T) {
 	test.InitConfigTest()
-
+	defer os.RemoveAll("./storage")
 	db, _, err := test.SetupDBtest()
 	if err != nil {
 		panic(err)

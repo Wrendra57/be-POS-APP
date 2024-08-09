@@ -16,7 +16,7 @@ func InsertCategoriesTest(db *pgxpool.Pool, category domain.Category) domain.Cat
 	utils.PanicIfError(err)
 	defer utils.CommitOrRollback(context.Background(), tx)
 
-	category, err = categoryRepo.Insert(context.Background(), tx, category)
+	category = categoryRepo.Insert(context.Background(), tx, category)
 	utils.PanicIfError(err)
 	return category
 }

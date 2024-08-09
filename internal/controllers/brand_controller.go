@@ -20,10 +20,7 @@ func CreateBrand(service services.BrandService, validate *validator.Validate) fi
 			errors := exception.FormatValidationError(err)
 			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
 		}
-		b, errs, e := service.CreateBrand(ctx, request)
-		if e == false {
-			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
-		}
+		b := service.CreateBrand(ctx, request)
 		return exception.SuccessResponse(ctx, "success", b)
 	}
 }
@@ -60,10 +57,8 @@ func ListBrand(service services.BrandService, validate *validator.Validate) fibe
 		} else {
 			request.Offset = 1
 		}
-		b, errs, e := service.ListBrand(ctx, request)
-		if e == false {
-			return exception.CustomResponse(ctx, errs.Code, errs.Error, nil)
-		}
+		b := service.ListBrand(ctx, request)
+
 		return exception.SuccessResponse(ctx, "Success get data brand", b)
 	}
 }
