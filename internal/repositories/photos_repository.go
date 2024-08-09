@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/gofiber/fiber/v2"
@@ -12,7 +11,7 @@ import (
 )
 
 type PhotosRepository interface {
-	Insert(ctx context.Context, tx pgx.Tx, photos domain.Photos) (domain.Photos, error)
+	Insert(ctx context.Context, tx pgx.Tx, photos domain.Photos) domain.Photos
 	FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.Photos, error)
 }
 
@@ -23,7 +22,7 @@ func NewPhotosRepository() PhotosRepository {
 	return &PhotosRepositoryImpl{}
 }
 
-func (p PhotosRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, photos domain.Photos) (domain.Photos, error) {
+func (p PhotosRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, photos domain.Photos) domain.Photos {
 	//TODO implement me
 	SQL := "INSERT INTO photos(url,owner_id) VALUES($1, $2) RETURNING id"
 
@@ -33,13 +32,10 @@ func (p PhotosRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, photos doma
 
 	err := row.Scan(&id)
 
-	if err != nil {
-		fmt.Println("repo insert foto ==>  " + err.Error())
-		return photos, err
-	}
+	utils.PanicIfError(err)
 
 	photos.Id = id
-	return photos, nil
+	return photos
 }
 
 func (p PhotosRepositoryImpl) FindByUUID(ctx *fiber.Ctx, tx pgx.Tx, uuid uuid.UUID) (domain.Photos, error) {

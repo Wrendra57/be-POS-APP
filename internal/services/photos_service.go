@@ -6,7 +6,6 @@ import (
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/repositories"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
-	"github.com/Wrendra57/Pos-app-be/internal/utils/exception"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -20,7 +19,7 @@ import (
 )
 
 type PhotosService interface {
-	UploadPhotoService(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) (domain.Photos, exception.CustomEror, bool)
+	UploadPhotoService(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) domain.Photos
 	UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string, photo *multipart.FileHeader, owner uuid.UUID) (domain.Photos,
 		error)
 }
@@ -40,8 +39,7 @@ func NewPhotosService(PhotoRepo repositories.PhotosRepository,
 		Validate:  Validate,
 	}
 }
-func (s photosServiceImpl) UploadPhotoService(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) (domain.Photos,
-	exception.CustomEror, bool) {
+func (s photosServiceImpl) UploadPhotoService(ctx *fiber.Ctx, request webrequest.PhotoUploadRequest) domain.Photos {
 	request.Name = strings.Join(strings.Split(request.Name, " "), "-")
 	request.Foto.Filename = strings.Join(strings.Split(request.Foto.Filename, " "), "-")
 
@@ -68,10 +66,10 @@ func (s photosServiceImpl) UploadPhotoService(ctx *fiber.Ctx, request webrequest
 	err = ctx.SaveFile(request.Foto, filepath)
 	utils.PanicIfError(err)
 
-	f, err = s.PhotoRepo.Insert(ctx.Context(), tx, f)
+	f = s.PhotoRepo.Insert(ctx.Context(), tx, f)
 	utils.PanicIfError(err)
 
-	return f, exception.CustomEror{}, true
+	return f
 }
 func (s photosServiceImpl) UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string,
 	photo *multipart.FileHeader, owner uuid.UUID) (domain.Photos, error) {
@@ -96,7 +94,7 @@ func (s photosServiceImpl) UploadPhoto(ctx *fiber.Ctx, tx pgx.Tx, name string,
 	err := ctx.SaveFile(photo, filepath)
 	utils.PanicIfError(err)
 
-	f, err = s.PhotoRepo.Insert(ctx.Context(), tx, f)
+	f = s.PhotoRepo.Insert(ctx.Context(), tx, f)
 	utils.PanicIfError(err)
 
 	return f, nil

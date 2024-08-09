@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrespones"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
@@ -50,7 +49,6 @@ func CreateUser(service services.UserService, validate *validator.Validate) fibe
 			Message: "User created successfully",
 			Data:    createUser,
 		}
-		fmt.Println(createUser)
 		return ctx.Status(fiber.StatusOK).JSON(responseApi)
 	}
 }

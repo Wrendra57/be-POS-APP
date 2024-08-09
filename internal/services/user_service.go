@@ -120,8 +120,7 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	otp = s.OtpRepository.Insert(ctx.Context(), tx, otp)
 
 	//insert photo default to db
-	_, err = s.PhotoRepository.Insert(ctx.Context(), tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
-	utils.PanicIfError(err)
+	_ = s.PhotoRepository.Insert(ctx.Context(), tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
 
 	//sending otp via email
 	strOTP := "hai... " + user.Name + " ini kode otp kamu " + otp.Otp
