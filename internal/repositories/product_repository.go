@@ -10,12 +10,15 @@ import (
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"time"
 )
 
 type ProductRepository interface {
 	Insert(ctx context.Context, tx pgx.Tx, product domain.Product) (domain.Product, error)
-	FindById(ctx context.Context, tx pgx.Tx, id uuid.UUID) (webrespones.ProductFindDetail, error)
+	FindByIdDetail(ctx context.Context, tx pgx.Tx, id uuid.UUID) (webrespones.ProductFindDetail, error)
 	ListAll(ctx context.Context, tx pgx.Tx, request webrequest.ProductListRequest) []domain.ProductList
+	Delete(ctx context.Context, tx pgx.Tx, id uuid.UUID) error
+	FindById(ctx context.Context, tx pgx.Tx, id uuid.UUID) (domain.Product, error)
 }
 
 type productRepositoryImpl struct {
@@ -42,7 +45,37 @@ func (p productRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, product do
 	return product, nil
 }
 
-func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.UUID) (webrespones.ProductFindDetail, error) {
+func (p productRepositoryImpl) FindById(ctx context.Context, tx pgx.Tx, id uuid.UUID) (domain.Product, error) {
+	//TODO implement me
+	SQL := `SELECT id,
+				   product_name,
+				   sell_price,
+				   call_name,
+				   admin_id,
+				   category_id,
+				   brand_id,
+				   supplier_id,
+				   created_at,
+				   updated_at,
+				   deleted_at
+			FROM products
+			WHERE id = $1`
+	rows, err := tx.Query(ctx, SQL, id)
+	utils.PanicIfError(err)
+	defer rows.Close()
+
+	var product domain.Product
+
+	if rows.Next() {
+		err := rows.Scan(&product.Id, &product.ProductName, &product.SellPrice, &product.CallName, &product.AdminId, &product.CategoryId, &product.BrandId, &product.SupplierId, &product.CreatedAt, &product.UpdatedAt, &product.DeletedAt)
+		utils.PanicIfError(err)
+		return product, nil
+	} else {
+		return product, errors.New("Product not found")
+	}
+}
+
+func (p productRepositoryImpl) FindByIdDetail(ctx context.Context, tx pgx.Tx, id uuid.UUID) (webrespones.ProductFindDetail, error) {
 	SQL := `SELECT p.id           AS product_id,
 				   p.product_name,
 				   p.sell_price,
@@ -133,4 +166,15 @@ func (p productRepositoryImpl) ListAll(ctx context.Context, tx pgx.Tx, request w
 		products = append(products, product)
 	}
 	return products
+}
+
+func (p productRepositoryImpl) Delete(ctx context.Context, tx pgx.Tx, id uuid.UUID) error {
+	//TODO implement me
+	SQL := `UPDATE products
+			SET deleted_at = $1
+			WHERE id = $2`
+
+	_, err := tx.Exec(ctx, SQL, time.Now(), id)
+	utils.PanicIfError(err)
+	return nil
 }

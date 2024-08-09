@@ -29,8 +29,20 @@ func Authenticate() fiber.Handler {
 			return exception.UnauthorizedRespone(c, "Unauthorized")
 		}
 		c.Locals("user_id", result.User_id)
+		c.Locals("level", result.Level)
 		c.Locals("token", tokenString)
 
+		return c.Next()
+	}
+}
+
+func RolePermission(role string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		level, _ := c.Locals("level").(string)
+
+		if level != role {
+			return exception.CustomResponse(c, fiber.StatusForbidden, "You do not have permission", nil)
+		}
 		return c.Next()
 	}
 }

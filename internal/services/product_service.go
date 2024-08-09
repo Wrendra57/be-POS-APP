@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"github.com/Wrendra57/Pos-app-be/config"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
@@ -20,6 +21,7 @@ type ProductService interface {
 	CreateProduct(ctx *fiber.Ctx, request webrequest.ProductCreateRequest) domain.Product
 	FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool)
 	ListProduct(ctx *fiber.Ctx, request webrequest.ProductListRequest) []domain.ProductList
+	DeleteProduct(ctx *fiber.Ctx, id uuid.UUID) error
 }
 
 type productServiceImpl struct {
@@ -81,7 +83,7 @@ func (s productServiceImpl) FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webre
 	defer utils.CommitOrRollback(ctx.Context(), tx)
 
 	product := webrespones.ProductFindDetail{}
-	product, err = s.ProductRepository.FindById(ctx.Context(), tx, id)
+	product, err = s.ProductRepository.FindByIdDetail(ctx.Context(), tx, id)
 
 	if err != nil {
 		return webrespones.ProductFindByIdResponseApi{}, exception.CustomEror{Code: fiber.StatusNotFound, Error: err.Error()}, false
@@ -131,5 +133,25 @@ func (s productServiceImpl) ListProduct(ctx *fiber.Ctx, request webrequest.Produ
 		products = []domain.ProductList{}
 	}
 	return products
+
+}
+
+func (s productServiceImpl) DeleteProduct(ctx *fiber.Ctx, id uuid.UUID) error {
+	//TODO implement me
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
+
+	product, err := s.ProductRepository.FindById(ctx.Context(), tx, id)
+	if err != nil {
+		return err
+	}
+	if product.DeletedAt.Valid == true {
+		return errors.New("product not found / was deleted")
+	}
+
+	_ = s.ProductRepository.Delete(ctx.Context(), tx, id)
+
+	return nil
 
 }

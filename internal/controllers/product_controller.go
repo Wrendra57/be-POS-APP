@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/webrequest"
 	"github.com/Wrendra57/Pos-app-be/internal/services"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
@@ -128,5 +129,23 @@ func ListProduct(service services.ProductService) fiber.Handler {
 
 		p := service.ListProduct(ctx, request)
 		return exception.SuccessResponse(ctx, "Success get data", p)
+	}
+}
+
+func DeleteProduct(service services.ProductService) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		id := ctx.Params("id")
+		parsedId, err := uuid.Parse(id)
+		if err != nil {
+			return exception.CustomResponse(ctx, fiber.StatusBadRequest, "invalid id product", nil)
+		}
+		err = service.DeleteProduct(ctx, parsedId)
+
+		if err != nil {
+			fmt.Println("err", err.Error())
+			return exception.CustomResponse(ctx, 400, err.Error(), nil)
+		}
+
+		return exception.SuccessResponse(ctx, "Success delete product", id)
 	}
 }
