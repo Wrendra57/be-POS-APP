@@ -8,7 +8,9 @@ import (
 func RecoverMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		defer func() {
-			if r := recover(); r != nil {
+			r := recover()
+
+			if r != nil {
 				log.Printf("Panic recovered: %v", r)
 				// You can customize the error response as per your needs
 				_ = c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

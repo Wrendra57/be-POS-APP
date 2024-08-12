@@ -36,7 +36,7 @@ func (r *oauthRepositoryImpl) InsertOauth(ctx context.Context, tx pgx.Tx, oauth 
 	err := row.Scan(&id)
 
 	if err != nil {
-		fmt.Println("insertoauth ==>  " + err.Error())
+		//fmt.Println("insertoauth ==>  " + err.Error())
 		return oauth, err
 	}
 
@@ -55,7 +55,7 @@ func (r *oauthRepositoryImpl) FindByEmail(ctx *fiber.Ctx, tx pgx.Tx, email strin
 		&oauth.Created_at, &oauth.Updated_at)
 
 	if err != nil {
-		fmt.Println("repo oauth find by email ==>  " + err.Error())
+		//fmt.Println("repo oauth find by email ==>  " + err.Error())
 		return oauth, errors.New("user not found")
 	}
 
@@ -74,7 +74,7 @@ func (r *oauthRepositoryImpl) FindByUserName(ctx *fiber.Ctx, tx pgx.Tx, username
 		&oauth.Created_at, &oauth.Updated_at)
 	//fmt.Println(oauth)
 	if err != nil {
-		fmt.Println("repo oauth find by username ==>  " + err.Error())
+		//fmt.Println("repo oauth find by username ==>  " + err.Error())
 		return oauth, errors.New("oauth not found")
 	}
 

@@ -16,7 +16,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	recover2 "github.com/gofiber/fiber/v2/middleware/recover"
+	//recover2 "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
 )
@@ -77,7 +77,7 @@ func NewApp(
 	},
 	)
 	app.Use(cors.New())
-	app.Use(recover2.New())
+	//app.Use(recover2.New())
 	app.Use(middleware.RecoverMiddleware())
 	app.Static("/foto", "./storage/photos")
 	app.Get("/", func(ctx *fiber.Ctx) error {

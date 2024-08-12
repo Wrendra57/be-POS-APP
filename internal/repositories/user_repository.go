@@ -3,7 +3,6 @@ package repositories
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/Wrendra57/Pos-app-be/internal/models/domain"
 	"github.com/Wrendra57/Pos-app-be/internal/utils"
 	"github.com/gofiber/fiber/v2"
@@ -35,7 +34,7 @@ func (r *UserRepositoryImpl) InsertUser(ctx context.Context, tx pgx.Tx, user dom
 	err := row.Scan(&userID)
 
 	if err != nil {
-		fmt.Println("repo insert user ==>  " + err.Error())
+		//fmt.Println("repo insert user ==>  " + err.Error())
 		return user, err
 	}
 

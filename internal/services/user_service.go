@@ -123,16 +123,16 @@ func (s userServiceImpl) CreateUser(ctx *fiber.Ctx, request webrequest.UserCreat
 	_ = s.PhotoRepository.Insert(ctx.Context(), tx, domain.Photos{Url: photoTemplate, Owner: user.User_id})
 
 	//sending otp via email
-	strOTP := "hai... " + user.Name + " ini kode otp kamu " + otp.Otp
+	//strOTP := "hai... " + user.Name + " ini kode otp kamu " + otp.Otp
 	//err = utils.SendEmail("wrendra57@gmail.com", "OTP-ACCOUNT", strOTP)
 	//utils.PanicIfError(err)
 
 	//sending otp via wa
-	body := map[string]string{
-		"Phone": user.Telp,
-		"Body":  strOTP,
-	}
-	utils.WASender(body)
+	//body := map[string]string{
+	//	"Phone": user.Telp,
+	//	"Body":  strOTP,
+	//}
+	//utils.WASender(body)
 	//GenerateJWT for access validasi otp
 	JWTStr, err := utils.GenerateJWT(user.User_id, role.Role)
 	utils.PanicIfError(err)

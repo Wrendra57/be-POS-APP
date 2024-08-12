@@ -1,10 +1,8 @@
 package utils
 
-import "fmt"
-
 func PanicIfError(err error) {
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
 		panic(err)
 	}
 
