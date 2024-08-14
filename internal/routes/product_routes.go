@@ -13,4 +13,6 @@ func ProductRoutes(app fiber.Router, service services.ProductService, validate *
 	app.Get("/v1/product/:id", controllers.FindById(service))
 	app.Get("/v1/product", controllers.ListProduct(service))
 	app.Delete("/v1/product/:id", middleware.Authenticate(), middleware.RolePermission("admin"), controllers.DeleteProduct(service))
+	app.Put("/v1/product/:id", middleware.Authenticate(), middleware.RolePermission("admin"), controllers.UpdateProduct(service, validate))
+
 }

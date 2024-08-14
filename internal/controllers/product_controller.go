@@ -149,3 +149,28 @@ func DeleteProduct(service services.ProductService) fiber.Handler {
 		return exception.SuccessResponse(ctx, "Success delete product", id)
 	}
 }
+
+func UpdateProduct(service services.ProductService, validate *validator.Validate) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		id := ctx.Params("id")
+		parsedId, err := uuid.Parse(id)
+		if err != nil {
+			return exception.CustomResponse(ctx, fiber.StatusBadRequest, "invalid id product", nil)
+		}
+
+		request := webrequest.ProductUpdateRequest{}
+		err = ctx.BodyParser(&request)
+		utils.PanicIfError(err)
+
+		if err := pkg.ValidateStruct(&request, validate); err != nil {
+			errors := exception.FormatValidationError(err)
+			return exception.ValidateErrorResponse(ctx, "Validation error", errors)
+		}
+
+		update, exc, ok := service.UpdateProduct(ctx, parsedId, request)
+		if !ok {
+			return exception.CustomResponse(ctx, exc.Code, exc.Error, nil)
+		}
+		return exception.SuccessResponse(ctx, "Success update product", update)
+	}
+}

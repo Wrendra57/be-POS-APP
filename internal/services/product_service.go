@@ -22,6 +22,7 @@ type ProductService interface {
 	FindProductById(ctx *fiber.Ctx, id uuid.UUID) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool)
 	ListProduct(ctx *fiber.Ctx, request webrequest.ProductListRequest) []domain.ProductList
 	DeleteProduct(ctx *fiber.Ctx, id uuid.UUID) error
+	UpdateProduct(ctx *fiber.Ctx, id uuid.UUID, request webrequest.ProductUpdateRequest) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool)
 }
 
 type productServiceImpl struct {
@@ -154,4 +155,63 @@ func (s productServiceImpl) DeleteProduct(ctx *fiber.Ctx, id uuid.UUID) error {
 
 	return nil
 
+}
+
+func (s productServiceImpl) UpdateProduct(ctx *fiber.Ctx, id uuid.UUID, request webrequest.ProductUpdateRequest) (webrespones.ProductFindByIdResponseApi, exception.CustomEror, bool) {
+	tx, err := s.DB.BeginTx(ctx.Context(), config.TxConfig())
+	utils.PanicIfError(err)
+	defer utils.CommitOrRollback(ctx.Context(), tx)
+
+	adminId, _ := ctx.Locals("user_id").(uuid.UUID)
+
+	//check product
+	_, err = s.ProductRepository.FindById(ctx.Context(), tx, id)
+	if err != nil {
+		return webrespones.ProductFindByIdResponseApi{}, exception.CustomEror{Code: fiber.StatusNotFound, Error: err.Error()}, false
+	}
+	p := domain.Product{
+		ProductName: request.ProductName,
+		SellPrice:   request.SellPrice,
+		CallName:    request.CallName,
+		AdminId:     adminId,
+		CategoryId:  request.Category,
+		BrandId:     request.Brand,
+		SupplierId:  request.Supplier,
+	}
+	p, err = s.ProductRepository.Update(ctx.Context(), tx, p, id)
+	if err != nil {
+		return webrespones.ProductFindByIdResponseApi{}, exception.CustomEror{Code: fiber.StatusBadRequest, Error: err.Error()},
+			false
+	}
+	findDetail, _ := s.ProductRepository.FindByIdDetail(ctx.Context(), tx, id)
+
+	return webrespones.ProductFindByIdResponseApi{
+		Id:          findDetail.Id,
+		ProductName: findDetail.ProductName,
+		SellPrice:   findDetail.SellPrice,
+		CallName:    findDetail.CallName,
+		Admin: struct {
+			AdminId   uuid.UUID `json:"admin_id"`
+			AdminName string    `json:"admin_name"`
+		}{AdminId: findDetail.AdminId, AdminName: findDetail.AdminName},
+		Category: struct {
+			CategoryId          uuid.UUID `json:"category_id"`
+			CategoryName        string    `json:"category_name"`
+			CategoryDescription string    `json:"category_description"`
+		}{CategoryId: findDetail.CategoryId, CategoryName: findDetail.CategoryName, CategoryDescription: findDetail.CategoryDescription},
+		Brand: struct {
+			BrandId          int    `json:"brand_id"`
+			BrandName        string `json:"brand_name"`
+			BrandDescription string `json:"brand_description"`
+		}{BrandId: findDetail.BrandId, BrandName: findDetail.BrandName, BrandDescription: findDetail.BrandDescription},
+		Supplier: struct {
+			SupplierId          uuid.UUID `json:"supplier_id"`
+			SupplierName        string    `json:"supplier_name"`
+			SupplierContactInfo string    `json:"supplier_contact_info"`
+			SupplierAddress     string    `json:"supplier_address"`
+		}{SupplierId: findDetail.SupplierId, SupplierName: findDetail.SupplierName, SupplierContactInfo: findDetail.SupplierContactInfo, SupplierAddress: findDetail.SupplierAddress},
+		Photos:    findDetail.Photos,
+		CreatedAt: findDetail.CreatedAt,
+		UpdatedAt: findDetail.UpdatedAt,
+	}, exception.CustomEror{}, true
 }

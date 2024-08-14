@@ -19,6 +19,7 @@ type ProductRepository interface {
 	ListAll(ctx context.Context, tx pgx.Tx, request webrequest.ProductListRequest) []domain.ProductList
 	Delete(ctx context.Context, tx pgx.Tx, id uuid.UUID) error
 	FindById(ctx context.Context, tx pgx.Tx, id uuid.UUID) (domain.Product, error)
+	Update(ctx context.Context, tx pgx.Tx, product domain.Product, id uuid.UUID) (domain.Product, error)
 }
 
 type productRepositoryImpl struct {
@@ -37,10 +38,7 @@ func (p productRepositoryImpl) Insert(ctx context.Context, tx pgx.Tx, product do
 	row := tx.QueryRow(ctx, SQL, product.ProductName, product.SellPrice, product.CallName, product.AdminId, product.CategoryId, product.BrandId, product.SupplierId)
 
 	err := row.Scan(&id)
-	if err != nil {
-		fmt.Println("repo insert product ==>  " + err.Error())
-		return product, err
-	}
+	utils.PanicIfError(err)
 	product.Id = id
 	return product, nil
 }
@@ -177,4 +175,64 @@ func (p productRepositoryImpl) Delete(ctx context.Context, tx pgx.Tx, id uuid.UU
 	_, err := tx.Exec(ctx, SQL, time.Now(), id)
 	utils.PanicIfError(err)
 	return nil
+}
+
+func (p productRepositoryImpl) Update(ctx context.Context, tx pgx.Tx, product domain.Product, id uuid.UUID) (domain.Product, error) {
+	SQL := "UPDATE products SET "
+	var args []interface{}
+	var index int
+
+	if product.ProductName != "" {
+		index++
+		SQL += fmt.Sprintf("product_name = $%d, ", index)
+		args = append(args, product.ProductName)
+	}
+	if product.SellPrice != 0 {
+		index++
+		SQL += fmt.Sprintf("sell_price = $%d, ", index)
+		args = append(args, product.SellPrice)
+	}
+	if product.CallName != "" {
+		index++
+		SQL += fmt.Sprintf("call_name = $%d, ", index)
+		args = append(args, product.CallName)
+	}
+	if product.AdminId != uuid.Nil {
+		index++
+		SQL += fmt.Sprintf("admin_id = $%d, ", index)
+		args = append(args, product.AdminId)
+	}
+	if product.CategoryId != uuid.Nil {
+		index++
+		SQL += fmt.Sprintf("category_id = $%d, ", index)
+		args = append(args, product.CategoryId)
+	}
+	if product.BrandId != 0 {
+		index++
+		SQL += fmt.Sprintf("brand_id = $%d, ", index)
+		args = append(args, product.BrandId)
+	}
+	if product.SupplierId != uuid.Nil {
+		index++
+		SQL += fmt.Sprintf("supplier_id = $%d, ", index)
+		args = append(args, product.SupplierId)
+	}
+
+	index++
+	SQL += fmt.Sprintf("updated_at = $%d, ", index)
+	args = append(args, time.Now())
+
+	SQL = SQL[:len(SQL)-2]
+
+	index++
+	SQL += fmt.Sprintf(" WHERE id = $%d", index)
+	args = append(args, id)
+
+	// Execute the update query
+	_, err := tx.Exec(ctx, SQL, args...)
+	if err != nil {
+		return domain.Product{}, fmt.Errorf("failed to update oauth: %w", err)
+	}
+
+	return product, nil
 }

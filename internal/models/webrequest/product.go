@@ -32,3 +32,12 @@ type ProductListRequest struct {
 	Limit  int    `json:"limit" validate:"required,min=1,max=30"`
 	Offset int    `json:"offset" validate:"required,min=1"`
 }
+
+type ProductUpdateRequest struct {
+	ProductName string    `json:"product_name" validate:"omitempty,min=2,max=252"`
+	SellPrice   int       `json:"sell_price" validate:"omitempty,gt=0"`
+	CallName    string    `json:"call_name" validate:"omitempty,min=2,max=1052"`
+	Category    uuid.UUID `json:"category" validate:""`
+	Brand       int       `json:"brand" validate:"omitempty,gt=0"`
+	Supplier    uuid.UUID `json:"supplier" validate:""`
+}
