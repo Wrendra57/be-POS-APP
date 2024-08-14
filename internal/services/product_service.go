@@ -169,6 +169,7 @@ func (s productServiceImpl) UpdateProduct(ctx *fiber.Ctx, id uuid.UUID, request 
 	if err != nil {
 		return webrespones.ProductFindByIdResponseApi{}, exception.CustomEror{Code: fiber.StatusNotFound, Error: err.Error()}, false
 	}
+
 	p := domain.Product{
 		ProductName: request.ProductName,
 		SellPrice:   request.SellPrice,
@@ -180,8 +181,7 @@ func (s productServiceImpl) UpdateProduct(ctx *fiber.Ctx, id uuid.UUID, request 
 	}
 	p, err = s.ProductRepository.Update(ctx.Context(), tx, p, id)
 	if err != nil {
-		return webrespones.ProductFindByIdResponseApi{}, exception.CustomEror{Code: fiber.StatusBadRequest, Error: err.Error()},
-			false
+		return webrespones.ProductFindByIdResponseApi{}, exception.CustomEror{Code: fiber.StatusBadRequest, Error: err.Error()}, false
 	}
 	findDetail, _ := s.ProductRepository.FindByIdDetail(ctx.Context(), tx, id)
 

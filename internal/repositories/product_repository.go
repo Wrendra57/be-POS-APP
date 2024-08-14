@@ -230,8 +230,11 @@ func (p productRepositoryImpl) Update(ctx context.Context, tx pgx.Tx, product do
 
 	// Execute the update query
 	_, err := tx.Exec(ctx, SQL, args...)
+	fmt.Println("update product")
 	if err != nil {
-		return domain.Product{}, fmt.Errorf("failed to update oauth: %w", err)
+		fmt.Println("update")
+		fmt.Println(err.Error())
+		return domain.Product{}, err
 	}
 
 	return product, nil
